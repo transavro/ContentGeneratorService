@@ -1,0 +1,140 @@
+syntax = "proto3";
+
+package ContentGeneratorService;
+
+import   "google/api/annotations.proto";
+import   "google/protobuf/timestamp.proto";
+
+service ContentGeneratorService{
+    rpc FetchNativeData(Request) returns (stream Optimus){
+        option (google.api.http) = {
+                post:"/fetch/native"
+                body: "*"
+        };
+    }
+
+    rpc FetchJustWatch(Request) returns (stream Optimus){
+        option (google.api.http) = {
+                post:"/fetch/justwatch"
+                body: "*"
+        };
+    }
+
+    rpc FetchHungamaPlay(Request) returns (stream Optimus){
+        option (google.api.http) = {
+                post:"/fetch/hungamaPlay"
+                body: "*"
+        };
+    }
+
+    rpc FetchShemaroo(Request) returns (stream Optimus){
+        option (google.api.http) = {
+                post:"/fetch/shemaroo"
+                body: "*"
+        };
+    }
+
+    rpc FetchAltBalaji(Request) returns (stream Optimus) {
+        option (google.api.http) = {
+                post:"/fetch/altBalaji"
+                body: "*"
+        };
+    }
+}
+
+message Request{}
+
+message ContentAvaliable {
+     double monetize = 6;
+     double targetId = 1;
+     string source = 2;
+     string package = 3;
+     string type = 4;
+     string target = 5;
+}
+
+message Monetize {
+    repeated ContentAvaliable contentAvailable = 3;
+     string ref_id = 1;
+}
+
+
+
+message Media {
+    repeated string landscape = 5;
+    repeated string portrait = 1;
+    repeated string backdrop = 2;
+    repeated string banner = 3;
+    repeated string video = 4;
+}
+
+message Content {
+     bool publishState = 3;
+     bool detailPage = 1;
+    repeated string sources = 2;
+}
+
+message Metadata {
+    string title = 20;
+    string imdbId = 1;
+    string synopsis = 2;
+    string country = 3;
+    string runtime = 4;
+    double rating = 5;
+    string releaseDate = 6;
+    repeated string tags = 7;
+    int32 year = 8;
+    repeated string cast = 9;
+    repeated string directors = 10;
+    repeated string genre = 11;
+    repeated string categories = 12;
+    repeated string languages = 13;
+    bool kidsSafe = 14;
+    double viewCount = 15;
+    int32 season = 16;
+    int32 episode = 17;
+    int32 part = 18;
+    repeated int32 mood = 19;
+}
+
+message Optimus {
+     Media media = 6;
+     string ref_id = 1;
+     int32 tileType = 2;
+     Content content = 3;
+     Metadata metadata = 4;
+     google.protobuf.Timestamp createdAt = 7;
+     google.protobuf.Timestamp updatedAt = 8;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
