@@ -40,20 +40,34 @@ service ContentGeneratorService{
                 body: "*"
         };
     }
+
+    rpc MergingOptimus(Request) returns (stream Optimus) {
+        option (google.api.http) = {
+                post:"/merge/optimus"
+                body: "*"
+        };
+    }
 }
 
 message Request{}
 
+enum Monetize {
+    Free = 0;
+    Paid = 1;
+    Subscription = 2;
+    Rent = 3;
+}
+
 message ContentAvaliable {
-     double monetize = 6;
-     double targetId = 1;
+     Monetize monetize = 6;
+     string targetId = 1;
      string source = 2;
      string package = 3;
      string type = 4;
      string target = 5;
 }
 
-message Monetize {
+message Play {
     repeated ContentAvaliable contentAvailable = 3;
      string ref_id = 1;
 }

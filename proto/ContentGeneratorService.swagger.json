@@ -1,0 +1,404 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "ContentGeneratorService.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/fetch/altBalaji": {
+      "post": {
+        "operationId": "FetchAltBalaji",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "$ref": "#/x-stream-definitions/ContentGeneratorServiceOptimus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ContentGeneratorServiceRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ContentGeneratorService"
+        ]
+      }
+    },
+    "/fetch/hungamaPlay": {
+      "post": {
+        "operationId": "FetchHungamaPlay",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "$ref": "#/x-stream-definitions/ContentGeneratorServiceOptimus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ContentGeneratorServiceRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ContentGeneratorService"
+        ]
+      }
+    },
+    "/fetch/justwatch": {
+      "post": {
+        "operationId": "FetchJustWatch",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "$ref": "#/x-stream-definitions/ContentGeneratorServiceOptimus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ContentGeneratorServiceRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ContentGeneratorService"
+        ]
+      }
+    },
+    "/fetch/native": {
+      "post": {
+        "operationId": "FetchNativeData",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "$ref": "#/x-stream-definitions/ContentGeneratorServiceOptimus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ContentGeneratorServiceRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ContentGeneratorService"
+        ]
+      }
+    },
+    "/fetch/shemaroo": {
+      "post": {
+        "operationId": "FetchShemaroo",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "$ref": "#/x-stream-definitions/ContentGeneratorServiceOptimus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ContentGeneratorServiceRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ContentGeneratorService"
+        ]
+      }
+    },
+    "/merge/optimus": {
+      "post": {
+        "operationId": "MergingOptimus",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "$ref": "#/x-stream-definitions/ContentGeneratorServiceOptimus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ContentGeneratorServiceRequest"
+            }
+          }
+        ],
+        "tags": [
+          "ContentGeneratorService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "ContentGeneratorServiceContent": {
+      "type": "object",
+      "properties": {
+        "publishState": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "detailPage": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ContentGeneratorServiceMedia": {
+      "type": "object",
+      "properties": {
+        "landscape": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "portrait": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "backdrop": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "banner": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "video": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "ContentGeneratorServiceMetadata": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "imdbId": {
+          "type": "string"
+        },
+        "synopsis": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        },
+        "runtime": {
+          "type": "string"
+        },
+        "rating": {
+          "type": "number",
+          "format": "double"
+        },
+        "releaseDate": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "year": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "cast": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "directors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "genre": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "languages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "kidsSafe": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "viewCount": {
+          "type": "number",
+          "format": "double"
+        },
+        "season": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "episode": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "part": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "mood": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    },
+    "ContentGeneratorServiceOptimus": {
+      "type": "object",
+      "properties": {
+        "media": {
+          "$ref": "#/definitions/ContentGeneratorServiceMedia"
+        },
+        "ref_id": {
+          "type": "string"
+        },
+        "tileType": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "content": {
+          "$ref": "#/definitions/ContentGeneratorServiceContent"
+        },
+        "metadata": {
+          "$ref": "#/definitions/ContentGeneratorServiceMetadata"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "ContentGeneratorServiceRequest": {
+      "type": "object"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeStreamError": {
+      "type": "object",
+      "properties": {
+        "grpc_code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "http_code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "http_status": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  },
+  "x-stream-definitions": {
+    "ContentGeneratorServiceOptimus": {
+      "type": "object",
+      "properties": {
+        "result": {
+          "$ref": "#/definitions/ContentGeneratorServiceOptimus"
+        },
+        "error": {
+          "$ref": "#/definitions/runtimeStreamError"
+        }
+      },
+      "title": "Stream result of ContentGeneratorServiceOptimus"
+    }
+  }
+}
