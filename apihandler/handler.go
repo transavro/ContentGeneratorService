@@ -171,6 +171,25 @@ type Cw_Tiles struct {
 	} `json:"metadata,omitempty"`
 }
 
+//AltBalaji
+type AltBalaji struct {
+	Message   string `json:"message"`
+	Code      int    `json:"code"`
+	Timestamp int64  `json:"timestamp"`
+	Data      struct {
+		Title         string   `json:"title"`
+		TitleType     string   `json:"titleType"`
+		Description   string   `json:"description"`
+		HrPosterURL   string   `json:"hrPosterURL"`
+		VrPosterURL   string   `json:"vrPosterURL"`
+		ReleaseDate   string   `json:"releaseDate"`
+		Directors     []string `json:"directors"`
+		Genres        []string `json:"genres"`
+		PrincipalCast []string `json:"principalCast"`
+		Deeplink      string   `json:"deeplink"`
+	} `json:"data"`
+}
+
 type Server struct {
 	OptimusDB *mongo.Database
 	NativeTile *mongo.Collection
@@ -450,7 +469,7 @@ func (s *Server) FetchHungamaPlay(request *pb.Request, stream pb.ContentGenerato
 
 						// check if already presnet
 						log.Println("Checking if already present ===>   ", optimus.GetMetadata().GetTitle())
-						result := s.OptimusDB.Collection("test_hungama_content").FindOne(context.Background(), bson.D{{"metadata.title", optimus.GetMetadata().GetTitle()}})
+						result := s.OptimusDB.Collection("test_hungama_monetize").FindOne(context.Background(), bson.D{{"contentavailable.targetid", optimus.GetMetadata().GetTitle()}})
 						if result.Err() != nil {
 							if result.Err() == mongo.ErrNoDocuments {
 								log.Println("Inserting..")
@@ -689,7 +708,8 @@ func (s *Server) FetchShemaroo(request *pb.Request, stream pb.ContentGeneratorSe
 
 				// check if already presnet
 				log.Println("Checking if already present ===>   ", optimus.GetMetadata().GetTitle())
-				result := s.OptimusDB.Collection("test_schemaroo_content").FindOne(context.Background(), bson.D{{"metadata.title", optimus.GetMetadata().GetTitle()}})
+				result := s.OptimusDB.Collection("test_schemaroo_monetize").FindOne(context.Background(), bson.D{{"contentavailable.targetid",
+					optimus.Metadata.Title}})
 				if result.Err() != nil {
 					if result.Err() == mongo.ErrNoDocuments {
 						log.Println("Inserting..")
@@ -721,6 +741,137 @@ func (s *Server) FetchShemaroo(request *pb.Request, stream pb.ContentGeneratorSe
 
 func (s *Server) FetchAltBalaji(request *pb.Request, stream pb.ContentGeneratorService_FetchAltBalajiServer) error {
 	log.Print("Hit ALT BALAJI")
+	req, err := http.NewRequest("GET", "https://partners-catalog.cloud.altbalaji.com/v1/content/titleidlist?", nil)
+	if err != nil {
+		return err
+	}
+	q := req.URL.Query()
+	q.Add("pageNo", "1")
+	q.Add("pageSize", "100")
+	req.URL.RawQuery = q.Encode()
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	var prime map[string]interface{}
+	err = json.Unmarshal(body, &prime)
+	if err != nil {
+		return err
+	}
+	if prime["message"] == "success" {
+		response := prime["data"].(map[string]interface{})
+		data := response["titleIdList"]
+		for _, v := range data.([]interface{}) {
+			tileid := v.(map[string]interface{})
+			req1, err1 := http.NewRequest("GET", "https://partners-catalog.cloud.altbalaji.com/v1/content/title/"+fmt.Sprint(tileid["id"]), nil)
+			if err1 != nil {
+				return err1
+			}
+			req1.URL.RawQuery = q.Encode()
+			client1 := &http.Client{}
+			resp1, err1 := client1.Do(req1)
+			if err1 != nil {
+				return err1
+			}
+			defer resp1.Body.Close()
+			body1, err1 := ioutil.ReadAll(resp1.Body)
+			if err1 != nil {
+				return err1
+			}
+
+			var altbaljivar *AltBalaji
+			err1 = json.Unmarshal(body1, &altbaljivar)
+			if err1 != nil {
+				return err1
+			}
+
+			log.Println(altbaljivar.Data.Title ,"   ================    " ,fmt.Sprint(tileid["id"]))
+
+			//making metadata
+			var metadata pb.Metadata
+			metadata.Title = altbaljivar.Data.Title
+			metadata.Cast = altbaljivar.Data.PrincipalCast
+			metadata.Directors = altbaljivar.Data.Directors
+			metadata.ReleaseDate = fmt.Sprintf("%s-%s-%s","02","01",altbaljivar.Data.ReleaseDate)
+			metadata.Synopsis = altbaljivar.Data.Description
+			metadata.Categories = []string{altbaljivar.Data.TitleType}
+			metadata.Languages = []string{}
+			metadata.Genre = altbaljivar.Data.Genres
+			metadata.Country = "INDIA"
+
+			//media
+			var media pb.Media
+			media.Landscape = []string{altbaljivar.Data.HrPosterURL}
+			media.Backdrop = []string{altbaljivar.Data.HrPosterURL}
+			media.Banner = []string{altbaljivar.Data.HrPosterURL}
+
+			media.Portrait = []string{altbaljivar.Data.VrPosterURL}
+			media.Video = []string{}
+
+			//conent
+			var content pb.Content
+			content.Sources = []string{"Alt Balaji"}
+			content.PublishState = true
+			content.DetailPage = true
+
+			bytesArray, _ := GenerateRandomBytes(32)
+			hasher := md5.New()
+			hasher.Write(bytesArray)
+			ref_id := hex.EncodeToString(hasher.Sum(nil))
+			ts, _ := ptypes.TimestampProto(time.Now())
+
+			optimus := &pb.Optimus{
+				Media:                &media,
+				RefId:                ref_id,
+				TileType:             0,
+				Content:              &content,
+				Metadata:             &metadata,
+				CreatedAt:            ts,
+				UpdatedAt:            nil,
+			}
+
+			// making montize
+			var contentAvlb pb.ContentAvaliable
+			contentAvlb.Monetize = -1
+			contentAvlb.Target = altbaljivar.Data.Deeplink
+			contentAvlb.Source = "Alt Balaji"
+			contentAvlb.TargetId = fmt.Sprint(tileid["id"])
+			contentAvlb.Package = "com.balaji.alt"
+			contentAvlb.Type = "CW_THIRDPARTY"
+
+			result := s.OptimusDB.Collection("test_altbalaji_monetize").FindOne(context.Background(), bson.D{{"contentavailable.targetid", optimus.GetMetadata().GetTitle()}})
+			if result.Err() != nil {
+				if result.Err() == mongo.ErrNoDocuments {
+					log.Println("Inserting..")
+					_, err = s.OptimusDB.Collection("test_altbalaji_content").InsertOne(context.Background(), optimus)
+					if err != nil {
+						return err
+					}
+					_, err = s.OptimusDB.Collection("test_altbalaji_monetize").InsertOne(context.Background(), pb.Play{
+						ContentAvailable: []*pb.ContentAvaliable{&contentAvlb},
+						RefId:            ref_id,
+					})
+					if err != nil {
+						return err
+					}
+					log.Println("sending data to client...")
+					stream.Send(optimus)
+
+				} else {
+					return result.Err()
+				}
+			} else {
+				log.Println("content already present", optimus.GetMetadata().GetTitle())
+			}
+		}
+	}
 	return nil
 }
 
