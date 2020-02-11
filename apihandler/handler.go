@@ -20,114 +20,155 @@ import (
 	"time"
 )
 
-// helper structs
+// helper structs for shemaroo
 type SchemarooCatlog struct {
 	Data struct {
 		CatalogListItems []struct {
-			CatalogID  string `json:"catalog_id"`
-			FriendlyID string `json:"friendly_id"`
-		} `json:"catalog_list_items"`
-	} `json:"data"`
+			CatalogID  string `json:"catalog_id,omitempty"`
+			FriendlyID string `json:"friendly_id,omitempty"`
+		} `json:"catalog_list_items,omitempty"`
+	} `json:"data,omitempty"`
 }
 
 type SchemarooData struct {
 	Data struct {
 		Items []struct {
-			Title             string        `json:"title"`
-			TitleWithLanguage []interface{} `json:"title_with_language"`
-			ContentID         string        `json:"content_id"`
-			Status            string        `json:"status"`
-			CatalogID         string        `json:"catalog_id"`
+			Title             string        `json:"title,omitempty"`
+			TitleWithLanguage []interface{} `json:"title_with_language,omitempty"`
+			ContentID         string        `json:"content_id,omitempty"`
+			Status            string        `json:"status,omitempty"`
+			CatalogID         string        `json:"catalog_id,omitempty"`
 			CatalogObject     struct {
-				FriendlyID       string `json:"friendly_id"`
-				LayoutType       string `json:"layout_type"`
-				ID               string `json:"id"`
-				PlanCategoryType string `json:"plan_category_type"`
-				LayoutScheme     string `json:"layout_scheme"`
-			} `json:"catalog_object"`
-			Regions          []string      `json:"regions"`
-			Language         string        `json:"language"`
-			Theme            string        `json:"theme"`
-			Genres           []string      `json:"genres"`
-			SubGenres        []interface{} `json:"sub_genres"`
-			DisplayGenres    []string      `json:"display_genres"`
-			DispalySubGenres []interface{} `json:"dispaly_sub_genres"`
-			Description      string        `json:"description"`
-			ItemCaption      string        `json:"item_caption"`
+				FriendlyID       string `json:"friendly_id,omitempty"`
+				LayoutType       string `json:"layout_type,omitempty"`
+				ID               string `json:"id,omitempty"`
+				PlanCategoryType string `json:"plan_category_type,omitempty"`
+				LayoutScheme     string `json:"layout_scheme,omitempty"`
+			} `json:"catalog_object,omitempty"`
+			Regions          []string      `json:"regions,omitempty"`
+			Language         string        `json:"language,omitempty"`
+			Theme            string        `json:"theme,omitempty"`
+			Genres           []string      `json:"genres,omitempty"`
+			SubGenres        []interface{} `json:"sub_genres,omitempty"`
+			DisplayGenres    []string      `json:"display_genres,omitempty"`
+			DispalySubGenres []interface{} `json:"dispaly_sub_genres,omitempty"`
+			Description      string        `json:"description,omitempty"`
+			ItemCaption      string        `json:"item_caption,omitempty"`
 			Thumbnails       struct {
 				LMedium struct {
-					URL string `json:"url"`
-				} `json:"l_medium"`
+					URL string `json:"url,omitempty"`
+				} `json:"l_medium,omitempty"`
 				LLarge struct {
-					URL string `json:"url"`
-				} `json:"l_large"`
+					URL string `json:"url,omitempty"`
+				} `json:"l_large,omitempty"`
 				PSmall struct {
-					URL string `json:"url"`
-				} `json:"p_small"`
+					URL string `json:"url,omitempty"`
+				} `json:"p_small,omitempty"`
 				XlImage169 struct {
-					URL string `json:"url"`
-				} `json:"xl_image_16_9"`
+					URL string `json:"url,omitempty"`
+				} `json:"xl_image_16_9,omitempty"`
 				Large169 struct {
-					URL string `json:"url"`
-				} `json:"large_16_9"`
+					URL string `json:"url,omitempty"`
+				} `json:"large_16_9,omitempty"`
 				Medium169 struct {
-					URL string `json:"url"`
-				} `json:"medium_16_9"`
+					URL string `json:"url,omitempty"`
+				} `json:"medium_16_9,omitempty"`
 				Small169 struct {
-					URL string `json:"url"`
-				} `json:"small_16_9"`
+					URL string `json:"url,omitempty"`
+				} `json:"small_16_9,omitempty"`
 				XlImage23 struct {
-					URL string `json:"url"`
-				} `json:"xl_image_2_3"`
+					URL string `json:"url,omitempty"`
+				} `json:"xl_image_2_3,omitempty"`
 				Large23 struct {
-					URL string `json:"url"`
-				} `json:"large_2_3"`
+					URL string `json:"url,omitempty"`
+				} `json:"large_2_3,omitempty"`
 				Medium23 struct {
-					URL string `json:"url"`
-				} `json:"medium_2_3"`
+					URL string `json:"url,omitempty"`
+				} `json:"medium_2_3,omitempty"`
 				Small23 struct {
-					URL string `json:"url"`
-				} `json:"small_2_3"`
+					URL string `json:"url,omitempty"`
+				} `json:"small_2_3,omitempty"`
 				XlImage11 struct {
-					URL string `json:"url"`
-				} `json:"xl_image_1_1"`
+					URL string `json:"url,omitempty"`
+				} `json:"xl_image_1_1,omitempty"`
 				Large11 struct {
-					URL string `json:"url"`
-				} `json:"large_1_1"`
+					URL string `json:"url,omitempty"`
+				} `json:"large_1_1,omitempty"`
 				Medium11 struct {
-					URL string `json:"url"`
-				} `json:"medium_1_1"`
+					URL string `json:"url,omitempty"`
+				} `json:"medium_1_1,omitempty"`
 				Small11 struct {
-					URL string `json:"url"`
-				} `json:"small_1_1"`
+					URL string `json:"url,omitempty"`
+				} `json:"small_1_1,omitempty"`
 				XlImage165 struct {
-					URL string `json:"url"`
-				} `json:"xl_image_16_5"`
+					URL string `json:"url,omitempty"`
+				} `json:"xl_image_16_5,omitempty"`
 				Small165 struct {
-					URL string `json:"url"`
-				} `json:"small_16_5"`
-			} `json:"thumbnails,omitempty"`
-			Rating            int           `json:"rating"`
-			ReleaseDate       interface{}   `json:"release_date"`
-			EpisodeCount      int           `json:"episode_count"`
-			EpisodeFlag       string        `json:"episode_flag"`
-			SubcategoryFlag   string        `json:"subcategory_flag"`
-			CustomTags        []interface{} `json:"custom_tags"`
-			CatalogName       string        `json:"catalog_name"`
-			LikeCount         int           `json:"like_count"`
-			NoOfUserRated     int           `json:"no_of_user_rated"`
-			AverageUserRating string        `json:"average_user_rating"`
-			ShortDescription  string        `json:"short_description"`
-			Keywords          string        `json:"keywords"`
-			SequenceNo        int           `json:"sequence_no"`
-			FriendlyID        string        `json:"friendly_id"`
-			ViewCountFlag     string        `json:"view_count_flag"`
-			DeeplinkURL       string        `json:"deeplink_url"`
+					URL string `json:"url,omitempty"`
+				} `json:"small_16_5,omitempty"`
+			} `json:"thumbnails,omitempty,omitempty"`
+			Rating            int           `json:"rating,omitempty"`
+			ReleaseDate       interface{}   `json:"release_date,omitempty"`
+			EpisodeCount      int           `json:"episode_count,omitempty"`
+			EpisodeFlag       string        `json:"episode_flag,omitempty"`
+			SubcategoryFlag   string        `json:"subcategory_flag,omitempty"`
+			CustomTags        []interface{} `json:"custom_tags,omitempty"`
+			CatalogName       string        `json:"catalog_name,omitempty"`
+			LikeCount         int           `json:"like_count,omitempty"`
+			NoOfUserRated     int           `json:"no_of_user_rated,omitempty"`
+			AverageUserRating string        `json:"average_user_rating,omitempty"`
+			ShortDescription  string        `json:"short_description,omitempty"`
+			Keywords          string        `json:"keywords,omitempty"`
+			SequenceNo        int           `json:"sequence_no,omitempty"`
+			FriendlyID        string        `json:"friendly_id,omitempty"`
+			ViewCountFlag     string        `json:"view_count_flag,omitempty"`
+			DeeplinkURL       string        `json:"deeplink_url,omitempty"`
 			AccessControl     struct {
-				IsFree bool `json:"is_free"`
-			} `json:"access_control"`
-		} `json:"items"`
-	} `json:"data"`
+				IsFree bool `json:"is_free,omitempty"`
+			} `json:"access_control,omitempty"`
+		} `json:"items,omitempty"`
+	} `json:"data,omitempty"`
+}
+
+
+// native cats helper strcut
+type Cw_Tiles struct {
+	RefID   string `json:"ref_id,omitempty"`
+	Posters struct {
+		Landscape        []string      `json:"landscape,omitempty"`
+		Portrait         []string      `json:"portrait,omitempty"`
+		Banner           []string 		`json:"banner,omitempty"`
+		Backdrop         []string      `json:"backdrop,omitempty"`
+	} `json:"posters,omitempty"`
+	Content struct {
+		Source       string   `json:"source,omitempty"`
+		PublishState bool     `json:"publishState,omitempty"`
+		DetailPage   bool     `json:"detailPage,omitempty"`
+		Package      string   `json:"package,omitempty"`
+		Type         string   `json:"type,omitempty"`
+		Target       []string `json:"target,omitempty"`
+	} `json:"content,omitempty"`
+	Metadata struct {
+		Imdbid          string      `json:"imdbid,omitempty"`
+		Title           string      `json:"title,omitempty"`
+		RelatedText     []string    `json:"relatedText,omitempty"`
+		RelatedTags     []string    `json:"relatedTags,omitempty"`
+		CustomTags      []string    `json:"customTags,omitempty"`
+		ReleaseDate     string      `json:"releaseDate,omitempty"`
+		Synopsis        string      `json:"synopsis,omitempty"`
+		Votes           int         `json:"votes,omitempty"`
+		Rating          float64         `json:"rating,omitempty"`
+		Country         []string    `json:"country,omitempty"`
+		Runtime         string      `json:"runtime,omitempty"`
+		Year            string      `json:"year,omitempty"`
+		Cast            []string    `json:"cast,omitempty"`
+		Directors       []string    `json:"directors,omitempty"`
+		Genre           []string    `json:"genre,omitempty"`
+		Categories      []string    `json:"categories,omitempty"`
+		Languages       []string    `json:"languages,omitempty"`
+		KidsSafe        bool        `json:"kidsSafe,omitempty"`
+		ViewCount       float64     `json:"viewCount,omitempty"`
+	} `json:"metadata,omitempty"`
 }
 
 type Server struct {
@@ -141,7 +182,7 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 		return err
 	}
 	for cur.Next(context.Background()){
-		var prime map[string]interface{}
+		var prime Cw_Tiles
 		err = cur.Decode(&prime)
 		if err != nil {
 			return err
