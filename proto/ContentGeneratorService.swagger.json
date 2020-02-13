@@ -236,7 +236,10 @@
           "type": "string"
         },
         "country": {
-          "type": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "runtime": {
           "type": "string"
@@ -327,8 +330,7 @@
           "type": "string"
         },
         "tileType": {
-          "type": "integer",
-          "format": "int32"
+          "$ref": "#/definitions/ContentGeneratorServiceTileType"
         },
         "content": {
           "$ref": "#/definitions/ContentGeneratorServiceContent"
@@ -348,6 +350,17 @@
     },
     "ContentGeneratorServiceRequest": {
       "type": "object"
+    },
+    "ContentGeneratorServiceTileType": {
+      "type": "string",
+      "enum": [
+        "ImageTile",
+        "VideoTile",
+        "FeatureTile",
+        "AdvertiseTile",
+        "CarouselTile"
+      ],
+      "default": "ImageTile"
     },
     "protobufAny": {
       "type": "object",

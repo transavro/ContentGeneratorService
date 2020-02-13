@@ -24,170 +24,169 @@ import (
 type SchemarooCatlog struct {
 	Data struct {
 		CatalogListItems []struct {
-			CatalogID  string `json:"catalog_id,omitempty"`
-			FriendlyID string `json:"friendly_id,omitempty"`
-		} `json:"catalog_list_items,omitempty"`
-	} `json:"data,omitempty"`
+			CatalogID  string `json:"catalog_id,omitempty,omitempty"`
+			FriendlyID string `json:"friendly_id,omitempty,omitempty"`
+		} `json:"catalog_list_items,omitempty,omitempty"`
+	} `json:"data,omitempty,omitempty"`
 }
 
 type SchemarooData struct {
 	Data struct {
 		Items []struct {
-			Title             string        `json:"title,omitempty"`
-			TitleWithLanguage []interface{} `json:"title_with_language,omitempty"`
-			ContentID         string        `json:"content_id,omitempty"`
-			Status            string        `json:"status,omitempty"`
-			CatalogID         string        `json:"catalog_id,omitempty"`
+			Title             string        `json:"title,omitempty,omitempty"`
+			TitleWithLanguage []interface{} `json:"title_with_language,omitempty,omitempty"`
+			ContentID         string        `json:"content_id,omitempty,omitempty"`
+			Status            string        `json:"status,omitempty,omitempty"`
+			CatalogID         string        `json:"catalog_id,omitempty,omitempty"`
 			CatalogObject     struct {
-				FriendlyID       string `json:"friendly_id,omitempty"`
-				LayoutType       string `json:"layout_type,omitempty"`
-				ID               string `json:"id,omitempty"`
-				PlanCategoryType string `json:"plan_category_type,omitempty"`
-				LayoutScheme     string `json:"layout_scheme,omitempty"`
-			} `json:"catalog_object,omitempty"`
-			Regions          []string      `json:"regions,omitempty"`
-			Language         string        `json:"language,omitempty"`
-			Theme            string        `json:"theme,omitempty"`
-			Genres           []string      `json:"genres,omitempty"`
-			SubGenres        []interface{} `json:"sub_genres,omitempty"`
-			DisplayGenres    []string      `json:"display_genres,omitempty"`
-			DispalySubGenres []interface{} `json:"dispaly_sub_genres,omitempty"`
-			Description      string        `json:"description,omitempty"`
-			ItemCaption      string        `json:"item_caption,omitempty"`
+				FriendlyID       string `json:"friendly_id,omitempty,omitempty"`
+				LayoutType       string `json:"layout_type,omitempty,omitempty"`
+				ID               string `json:"id,omitempty,omitempty"`
+				PlanCategoryType string `json:"plan_category_type,omitempty,omitempty"`
+				LayoutScheme     string `json:"layout_scheme,omitempty,omitempty"`
+			} `json:"catalog_object,omitempty,omitempty"`
+			Regions          []string      `json:"regions,omitempty,omitempty"`
+			Language         string        `json:"language,omitempty,omitempty"`
+			Theme            string        `json:"theme,omitempty,omitempty"`
+			Genres           []string      `json:"genres,omitempty,omitempty"`
+			SubGenres        []interface{} `json:"sub_genres,omitempty,omitempty"`
+			DisplayGenres    []string      `json:"display_genres,omitempty,omitempty"`
+			DispalySubGenres []interface{} `json:"dispaly_sub_genres,omitempty,omitempty"`
+			Description      string        `json:"description,omitempty,omitempty"`
+			ItemCaption      string        `json:"item_caption,omitempty,omitempty"`
 			Thumbnails       struct {
 				LMedium struct {
-					URL string `json:"url,omitempty"`
-				} `json:"l_medium,omitempty"`
+					URL string `json:"url,omitempty,omitempty"`
+				} `json:"l_medium,omitempty,omitempty"`
 				LLarge struct {
-					URL string `json:"url,omitempty"`
-				} `json:"l_large,omitempty"`
+					URL string `json:"url,omitempty,omitempty"`
+				} `json:"l_large,omitempty,omitempty"`
 				PSmall struct {
-					URL string `json:"url,omitempty"`
-				} `json:"p_small,omitempty"`
+					URL string `json:"url,omitempty,omitempty"`
+				} `json:"p_small,omitempty,omitempty"`
 				XlImage169 struct {
-					URL string `json:"url,omitempty"`
-				} `json:"xl_image_16_9,omitempty"`
+					URL string `json:"url,omitempty,omitempty"`
+				} `json:"xl_image_16_9,omitempty,omitempty"`
 				Large169 struct {
-					URL string `json:"url,omitempty"`
-				} `json:"large_16_9,omitempty"`
+					URL string `json:"url,omitempty,omitempty"`
+				} `json:"large_16_9,omitempty,omitempty"`
 				Medium169 struct {
-					URL string `json:"url,omitempty"`
-				} `json:"medium_16_9,omitempty"`
+					URL string `json:"url,omitempty,omitempty"`
+				} `json:"medium_16_9,omitempty,omitempty"`
 				Small169 struct {
-					URL string `json:"url,omitempty"`
-				} `json:"small_16_9,omitempty"`
+					URL string `json:"url,omitempty,omitempty"`
+				} `json:"small_16_9,omitempty,omitempty"`
 				XlImage23 struct {
-					URL string `json:"url,omitempty"`
-				} `json:"xl_image_2_3,omitempty"`
+					URL string `json:"url,omitempty,omitempty"`
+				} `json:"xl_image_2_3,omitempty,omitempty"`
 				Large23 struct {
-					URL string `json:"url,omitempty"`
-				} `json:"large_2_3,omitempty"`
+					URL string `json:"url,omitempty,omitempty"`
+				} `json:"large_2_3,omitempty,omitempty"`
 				Medium23 struct {
-					URL string `json:"url,omitempty"`
-				} `json:"medium_2_3,omitempty"`
+					URL string `json:"url,omitempty,omitempty"`
+				} `json:"medium_2_3,omitempty,omitempty"`
 				Small23 struct {
-					URL string `json:"url,omitempty"`
-				} `json:"small_2_3,omitempty"`
+					URL string `json:"url,omitempty,omitempty"`
+				} `json:"small_2_3,omitempty,omitempty"`
 				XlImage11 struct {
-					URL string `json:"url,omitempty"`
-				} `json:"xl_image_1_1,omitempty"`
+					URL string `json:"url,omitempty,omitempty"`
+				} `json:"xl_image_1_1,omitempty,omitempty"`
 				Large11 struct {
-					URL string `json:"url,omitempty"`
-				} `json:"large_1_1,omitempty"`
+					URL string `json:"url,omitempty,omitempty"`
+				} `json:"large_1_1,omitempty,omitempty"`
 				Medium11 struct {
-					URL string `json:"url,omitempty"`
-				} `json:"medium_1_1,omitempty"`
+					URL string `json:"url,omitempty,omitempty"`
+				} `json:"medium_1_1,omitempty,omitempty"`
 				Small11 struct {
-					URL string `json:"url,omitempty"`
-				} `json:"small_1_1,omitempty"`
+					URL string `json:"url,omitempty,omitempty"`
+				} `json:"small_1_1,omitempty,omitempty"`
 				XlImage165 struct {
-					URL string `json:"url,omitempty"`
-				} `json:"xl_image_16_5,omitempty"`
+					URL string `json:"url,omitempty,omitempty"`
+				} `json:"xl_image_16_5,omitempty,omitempty"`
 				Small165 struct {
-					URL string `json:"url,omitempty"`
-				} `json:"small_16_5,omitempty"`
-			} `json:"thumbnails,omitempty,omitempty"`
-			Rating            int           `json:"rating,omitempty"`
-			ReleaseDate       interface{}   `json:"release_date,omitempty"`
-			EpisodeCount      int           `json:"episode_count,omitempty"`
-			EpisodeFlag       string        `json:"episode_flag,omitempty"`
-			SubcategoryFlag   string        `json:"subcategory_flag,omitempty"`
-			CustomTags        []interface{} `json:"custom_tags,omitempty"`
-			CatalogName       string        `json:"catalog_name,omitempty"`
-			LikeCount         int           `json:"like_count,omitempty"`
-			NoOfUserRated     int           `json:"no_of_user_rated,omitempty"`
-			AverageUserRating string        `json:"average_user_rating,omitempty"`
-			ShortDescription  string        `json:"short_description,omitempty"`
-			Keywords          string        `json:"keywords,omitempty"`
-			SequenceNo        int           `json:"sequence_no,omitempty"`
-			FriendlyID        string        `json:"friendly_id,omitempty"`
-			ViewCountFlag     string        `json:"view_count_flag,omitempty"`
-			DeeplinkURL       string        `json:"deeplink_url,omitempty"`
+					URL string `json:"url,omitempty,omitempty"`
+				} `json:"small_16_5,omitempty,omitempty"`
+			} `json:"thumbnails,omitempty,omitempty,omitempty"`
+			Rating            int           `json:"rating,omitempty,omitempty"`
+			ReleaseDate       interface{}   `json:"release_date,omitempty,omitempty"`
+			EpisodeCount      int           `json:"episode_count,omitempty,omitempty"`
+			EpisodeFlag       string        `json:"episode_flag,omitempty,omitempty"`
+			SubcategoryFlag   string        `json:"subcategory_flag,omitempty,omitempty"`
+			CustomTags        []interface{} `json:"custom_tags,omitempty,omitempty"`
+			CatalogName       string        `json:"catalog_name,omitempty,omitempty"`
+			LikeCount         int           `json:"like_count,omitempty,omitempty"`
+			NoOfUserRated     int           `json:"no_of_user_rated,omitempty,omitempty"`
+			AverageUserRating string        `json:"average_user_rating,omitempty,omitempty"`
+			ShortDescription  string        `json:"short_description,omitempty,omitempty"`
+			Keywords          string        `json:"keywords,omitempty,omitempty"`
+			SequenceNo        int           `json:"sequence_no,omitempty,omitempty"`
+			FriendlyID        string        `json:"friendly_id,omitempty,omitempty"`
+			ViewCountFlag     string        `json:"view_count_flag,omitempty,omitempty"`
+			DeeplinkURL       string        `json:"deeplink_url,omitempty,omitempty"`
 			AccessControl     struct {
-				IsFree bool `json:"is_free,omitempty"`
-			} `json:"access_control,omitempty"`
-		} `json:"items,omitempty"`
-	} `json:"data,omitempty"`
+				IsFree bool `json:"is_free,omitempty,omitempty"`
+			} `json:"access_control,omitempty,omitempty"`
+		} `json:"items,omitempty,omitempty"`
+	} `json:"data,omitempty,omitempty"`
 }
 
 
 // native cats helper strcut
-type Cw_Tiles struct {
-	RefID   string `json:"ref_id,omitempty"`
-	Posters struct {
-		Landscape        []string      `json:"landscape,omitempty"`
-		Portrait         []string      `json:"portrait,omitempty"`
-		Banner           []string 		`json:"banner,omitempty"`
-		Backdrop         []string      `json:"backdrop,omitempty"`
-	} `json:"posters,omitempty"`
-	Content struct {
-		Source       string   `json:"source,omitempty"`
-		PublishState bool     `json:"publishState,omitempty"`
-		DetailPage   bool     `json:"detailPage,omitempty"`
-		Package      string   `json:"package,omitempty"`
-		Type         string   `json:"type,omitempty"`
-		Target       []string `json:"target,omitempty"`
-	} `json:"content,omitempty"`
+type NativeContent struct {
+	Media struct {
+		Landscape []string      `json:"landscape"`
+		Portrait  []string      `json:"portrait"`
+		Backdrop  []string      `json:"backdrop"`
+		Banner    []string      `json:"banner"`
+		Video     []interface{} `json:"video"`
+	} `json:"media"`
+	Refid    string `json:"refid"`
+	Tiletype int    `json:"tiletype"`
+	Content  struct {
+		Publishstate bool     `json:"publishstate"`
+		Detailpage   bool     `json:"detailpage"`
+		Sources      []string `json:"sources"`
+	} `json:"content"`
 	Metadata struct {
-		Imdbid          string      `json:"imdbid,omitempty"`
-		Title           string      `json:"title,omitempty"`
-		RelatedText     []string    `json:"relatedText,omitempty"`
-		RelatedTags     []string    `json:"relatedTags,omitempty"`
-		CustomTags      []string    `json:"customTags,omitempty"`
-		ReleaseDate     string      `json:"releaseDate,omitempty"`
-		Synopsis        string      `json:"synopsis,omitempty"`
-		Votes           int         `json:"votes,omitempty"`
-		Rating          float64         `json:"rating,omitempty"`
-		Country         []string    `json:"country,omitempty"`
-		Runtime         string      `json:"runtime,omitempty"`
-		Year            string      `json:"year,omitempty"`
-		Cast            []string    `json:"cast,omitempty"`
-		Directors       []string    `json:"directors,omitempty"`
-		Genre           []string    `json:"genre,omitempty"`
-		Categories      []string    `json:"categories,omitempty"`
-		Languages       []string    `json:"languages,omitempty"`
-		KidsSafe        bool        `json:"kidsSafe,omitempty"`
-		ViewCount       float64     `json:"viewCount,omitempty"`
-	} `json:"metadata,omitempty"`
+		Title       string        `json:"title"`
+		Imdbid      string        `json:"imdbid"`
+		Synopsis    string        `json:"synopsis"`
+		Country     []string      `json:"country"`
+		Runtime     string        `json:"runtime"`
+		Rating      int           `json:"rating"`
+		Releasedate string        `json:"releasedate"`
+		Tags        interface{}   `json:"tags"`
+		Year        int           `json:"year"`
+		Cast        []string      `json:"cast"`
+		Directors   []string      `json:"directors"`
+		Genre       []string      `json:"genre"`
+		Categories  []string      `json:"categories"`
+		Languages   []string `json:"languages"`
+		Kidssafe    bool          `json:"kidssafe"`
+		Viewcount   int           `json:"viewcount"`
+		Season      int           `json:"season"`
+		Episode     int           `json:"episode"`
+		Part        int           `json:"part"`
+	} `json:"metadata"`
 }
 
 //AltBalaji
 type AltBalaji struct {
-	Message   string `json:"message"`
-	Code      int    `json:"code"`
-	Timestamp int64  `json:"timestamp"`
+	Message   string `json:"message,omitempty"`
+	Code      int    `json:"code,omitempty"`
+	Timestamp int64  `json:"timestamp,omitempty"`
 	Data      struct {
-		Title         string   `json:"title"`
-		TitleType     string   `json:"titleType"`
-		Description   string   `json:"description"`
-		HrPosterURL   string   `json:"hrPosterURL"`
-		VrPosterURL   string   `json:"vrPosterURL"`
-		ReleaseDate   string   `json:"releaseDate"`
-		Directors     []string `json:"directors"`
-		Genres        []string `json:"genres"`
-		PrincipalCast []string `json:"principalCast"`
-		Deeplink      string   `json:"deeplink"`
-	} `json:"data"`
+		Title         string   `json:"title,omitempty"`
+		TitleType     string   `json:"titleType,omitempty"`
+		Description   string   `json:"description,omitempty"`
+		HrPosterURL   string   `json:"hrPosterURL,omitempty"`
+		VrPosterURL   string   `json:"vrPosterURL,omitempty"`
+		ReleaseDate   string   `json:"releaseDate,omitempty"`
+		Directors     []string `json:"directors,omitempty"`
+		Genres        []string `json:"genres,omitempty"`
+		PrincipalCast []string `json:"principalCast,omitempty"`
+		Deeplink      string   `json:"deeplink,omitempty"`
+	} `json:"data,omitempty"`
 }
 
 type Server struct {
@@ -196,17 +195,126 @@ type Server struct {
 }
 
 func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGeneratorService_FetchNativeDataServer) error {
-	cur, err := s.NativeTile.Find(context.Background(), bson.D{{}})
-	if err != nil {
+	log.Println("Hit NAtive")
+	cur, err := s.OptimusDB.Collection("nativecontents").Find(context.Background(), bson.D{{}})
+	if err !=  nil {
 		return err
 	}
-	for cur.Next(context.Background()){
-		var prime Cw_Tiles
-		err = cur.Decode(&prime)
+
+	defer  cur.Close(context.Background())
+	for cur.Next(context.Background()) {
+		var nativeCats NativeContent
+		err = cur.Decode(&nativeCats)
+		if err != nil {
+			log.Println("error while decoding ")
+			return err
+		}
+		
+		// media 
+		var Media pb.Media
+		if len(nativeCats.Media.Landscape) > 0 {
+			for _, v := range nativeCats.Media.Landscape {
+				Media.Landscape = append(Media.Landscape, fmt.Sprint(v))
+			}
+		}
+		if len(nativeCats.Media.Portrait) > 0 {
+			for _, v := range nativeCats.Media.Portrait {
+				Media.Portrait = append(Media.Portrait, fmt.Sprint(v))
+			}
+		}
+		if len(nativeCats.Media.Backdrop) > 0 {
+			for _, v := range nativeCats.Media.Backdrop {
+				Media.Backdrop = append(Media.Backdrop, fmt.Sprint(v))
+			}
+		}
+		if len(nativeCats.Media.Banner) > 0 {
+			for _, v := range nativeCats.Media.Banner {
+				Media.Banner = append(Media.Banner, fmt.Sprint(v))
+			}
+		}
+		if len(nativeCats.Media.Video) > 0 {
+			for _, v := range nativeCats.Media.Video {
+				Media.Video = append(Media.Video, fmt.Sprint(v))
+			}
+		}
+
+		// content
+		var Content pb.Content
+		Content.PublishState = nativeCats.Content.Publishstate
+		Content.DetailPage = nativeCats.Content.Detailpage
+		Content.Sources = nativeCats.Content.Sources
+
+		//Metadata
+		var Metadata pb.Metadata
+		Metadata.Title = nativeCats.Metadata.Title
+		Metadata.ImdbId = nativeCats.Metadata.Imdbid
+		Metadata.Synopsis = nativeCats.Metadata.Synopsis
+		Metadata.Country = nativeCats.Metadata.Country
+		Metadata.Runtime = nativeCats.Metadata.Runtime
+		//if nativeCats.Metadata.Rating != 0 {
+		//	switch i := nativeCats.Metadata.Rating.(type) {
+		//	case int:
+		//		{
+		//			Metadata.Rating = float64(i)
+		//		}
+		//	case float32:
+		//		{
+		//			Metadata.Rating = float64(i)
+		//		}
+		//	case float64:
+		//		{
+		//			Metadata.Rating = i
+		//		}
+		//	}
+		//}
+
+		Metadata.ReleaseDate = nativeCats.Metadata.Releasedate
+		Metadata.Country = nativeCats.Metadata.Country
+
+		//if nativeCats.Metadata.Viewcount != 0 {
+		//	switch i := nativeCats.Metadata.Viewcount.(type) {
+		//	case int:
+		//		{
+		//			Metadata.ViewCount = float64(i)
+		//		}
+		//	case float32:
+		//		{
+		//			Metadata.ViewCount = float64(i)
+		//		}
+		//	case float64:
+		//		{
+		//			Metadata.ViewCount = i
+		//		}
+		//	}
+		//}
+
+		Metadata.KidsSafe = nativeCats.Metadata.Kidssafe
+		Metadata.Cast = nativeCats.Metadata.Cast
+		Metadata.Directors = nativeCats.Metadata.Directors
+		Metadata.Categories = nativeCats.Metadata.Categories
+		Metadata.Languages = nativeCats.Metadata.Languages
+		//if nativeCats.Metadata.Year != 0 {
+		//	Metadata.Year = int32(nativeCats.Metadata.Year)
+		//}
+		//Metadata.Season = int32(nativeCats.Metadata.Season)
+		//Metadata.Episode = int32(nativeCats.Metadata.Season)
+		//Metadata.Part = int32(nativeCats.Metadata.Season)
+		//if len(nativeCats.Metadata.Mood) > 0 {
+		//	for _, v := range nativeCats.Metadata.Mood {
+		//		Metadata.Mood = append(Metadata.Mood, v.(int32))
+		//	}
+		//}
+		
+		err = stream.Send(&pb.Optimus{
+			Media:                &Media,
+			RefId:                nativeCats.Refid,
+			TileType:             pb.TileType_ImageTile,
+			Content:              &Content,
+			Metadata:             &Metadata,
+		})
 		if err != nil {
 			return err
 		}
-		log.Println(prime)
 	}
 	return nil
 }
@@ -371,13 +479,13 @@ func (s *Server) FetchHungamaPlay(request *pb.Request, stream pb.ContentGenerato
 						}else if tile["show_name"] != nil && tile["show_name"] != "" {
 							metadata.Title = strings.ToValidUTF8(fmt.Sprint(tile["show_name"]), "")
 						}
-						metadata.Country = fmt.Sprint(tile["country"])
-						metadata.Cast = strings.Split(fmt.Sprint(tile["actors"]), ",")
+						metadata.Country = []string{fmt.Sprint(tile["country"])}
+						metadata.Cast = strings.Split(strings.TrimSpace(fmt.Sprint(tile["actors"])), ",")
 						metadata.Directors = strings.Split(fmt.Sprint(tile["director"]), ",")
 						metadata.Genre = strings.Split(fmt.Sprint(tile["genre"]), ",")
 						metadata.Languages = strings.Split(fmt.Sprint(tile["language"]), ",")
 						if tile["tags"] != nil && tile["tags"] != "" {
-							metadata.Tags = strings.Split(fmt.Sprint(tile["tags"]), ",")
+							metadata.Tags = strings.Split(strings.TrimSpace(fmt.Sprint(tile["tags"])), ",")
 						} else {
 							metadata.Tags = []string{}
 						}
@@ -465,7 +573,7 @@ func (s *Server) FetchHungamaPlay(request *pb.Request, stream pb.ContentGenerato
 
 						ts, _ := ptypes.TimestampProto(time.Now())
 						log.Println(ref_id)
-						optimus := &pb.Optimus{Metadata: &metadata, RefId: ref_id, Content: &content, Media: &media, CreatedAt: ts}
+						optimus := &pb.Optimus{Metadata: &metadata, RefId: ref_id, Content: &content, Media: &media, CreatedAt: ts, TileType:pb.TileType_ImageTile}
 
 						// check if already presnet
 						log.Println("Checking if already present ===>   ", optimus.GetMetadata().GetTitle())
@@ -606,7 +714,7 @@ func (s *Server) FetchShemaroo(request *pb.Request, stream pb.ContentGeneratorSe
 				}
 
 				//TODO added default country as INDIA
-				metadata.Country = "INDIA"
+				metadata.Country = []string{"INDIA"}
 
 				if item.EpisodeCount != 0 {
 					metadata.Episode = int32(item.SequenceNo)
@@ -687,7 +795,7 @@ func (s *Server) FetchShemaroo(request *pb.Request, stream pb.ContentGeneratorSe
 				optimus := &pb.Optimus{
 					Media:     &media,
 					RefId:     ref_id,
-					TileType:  0,
+					TileType:  pb.TileType_ImageTile,
 					Content:   &content,
 					Metadata:  &metadata,
 					CreatedAt: ts,
@@ -708,8 +816,7 @@ func (s *Server) FetchShemaroo(request *pb.Request, stream pb.ContentGeneratorSe
 
 				// check if already presnet
 				log.Println("Checking if already present ===>   ", optimus.GetMetadata().GetTitle())
-				result := s.OptimusDB.Collection("test_schemaroo_monetize").FindOne(context.Background(), bson.D{{"contentavailable.targetid",
-					optimus.Metadata.Title}})
+				result := s.OptimusDB.Collection("test_schemaroo_monetize").FindOne(context.Background(), bson.D{{"contentavailable.targetid", optimus.Metadata.Title}})
 				if result.Err() != nil {
 					if result.Err() == mongo.ErrNoDocuments {
 						log.Println("Inserting..")
@@ -804,7 +911,7 @@ func (s *Server) FetchAltBalaji(request *pb.Request, stream pb.ContentGeneratorS
 			metadata.Categories = []string{altbaljivar.Data.TitleType}
 			metadata.Languages = []string{}
 			metadata.Genre = altbaljivar.Data.Genres
-			metadata.Country = "INDIA"
+			metadata.Country = []string{"INDIA"}
 
 			//media
 			var media pb.Media
@@ -830,7 +937,7 @@ func (s *Server) FetchAltBalaji(request *pb.Request, stream pb.ContentGeneratorS
 			optimus := &pb.Optimus{
 				Media:                &media,
 				RefId:                ref_id,
-				TileType:             0,
+				TileType:             pb.TileType_ImageTile,
 				Content:              &content,
 				Metadata:             &metadata,
 				CreatedAt:            ts,
@@ -877,16 +984,364 @@ func (s *Server) FetchAltBalaji(request *pb.Request, stream pb.ContentGeneratorS
 
 func (s *Server) MergingOptimus(request *pb.Request, stream pb.ContentGeneratorService_MergingOptimusServer) error {
 	log.Print("Hit MERGER")
-	//contentCollection := s.OptimusDB.Collection("test_content")
-	//hungContColl := s.OptimusDB.Collection("test_hungama_content")
-	//shemaContColl := s.OptimusDB.Collection("test_schemaroo_content")
-
-
 
 
 
 	return nil
 }
+
+
+func (s *Server) MergingNative(){
+
+
+
+
+
+}
+
+func (s *Server) MergingHungama() error {
+	// base content where all tiles are stored.
+	//baseContent := s.OptimusDB.Collection("base_content")
+	//baseMonetize := s.OptimusDB.Collection("base_monetize")
+	//
+	////merging hungama content
+	//hungamaContent := s.OptimusDB.Collection("test_hungama_content")
+	//hungamaMonetize := s.OptimusDB.Collection("test_hungama_monetize")
+
+	//cur, err := hungamaContent.Find(context.Background(), bson.D{{}})
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//var optimus *pb.Optimus
+	//for cur.Next(context.Background()){
+	//	err = cur.Decode(&optimus)
+	//	if err != nil {
+	//		return err
+	//	}
+	//
+	//}
+
+	return nil
+}
+
+func (s *Server) MergingLogic(targetOptimus pb.Optimus, targetMonetize pb.Monetize , ctx context.Context) error {
+
+
+	
+	baseContent := s.OptimusDB.Collection("base_content")
+	baseMonetize := s.OptimusDB.Collection("base_monetize")
+
+	queryFilter :=  bson.D{{"$and", bson.A{bson.D{{"metadata.title", targetOptimus.GetMetadata().GetTitle()}},
+		bson.D{{"content.source", targetOptimus.GetContent().GetSources()[0] }}   }}}
+
+	
+	result := baseContent.FindOne(ctx, queryFilter)
+
+	
+	if result.Err() != nil {
+		//TODO case 1 if the content is not Present
+		if result.Err() == mongo.ErrNoDocuments {
+			// found new coentent so interest it blindly
+			_, err := baseContent.InsertOne(ctx, targetOptimus)
+			if err != nil {
+				return err
+			}
+			_, err = baseMonetize.InsertOne(ctx, targetMonetize)
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+	}else {
+		//TODO case 2 if the content is already Present
+		var baseOptimus *pb.Optimus
+		err := result.Decode(baseOptimus)
+		if err != nil {
+			return err
+		}
+
+		// starting with media comparsion
+
+		// ladscape
+		if len(baseOptimus.GetMedia().GetLandscape()) > 0 {
+			for _, v := range targetOptimus.GetMedia().GetLandscape() {
+				// check if already present, if not add
+				for _, j := range baseOptimus.GetMedia().GetLandscape() {
+					if v == j {
+						break
+					}else {
+						baseOptimus.GetMedia().Landscape = append(baseOptimus.GetMedia().Landscape , v)
+					}
+				}
+			}
+		}else {
+			baseOptimus.GetMedia().Landscape = targetOptimus.GetMedia().GetLandscape()
+		}
+
+
+		// portrait
+		if len(baseOptimus.GetMedia().GetPortrait()) > 0 {
+			for _, v := range targetOptimus.GetMedia().GetPortrait() {
+				// check if already present, if not add
+				for _, j := range baseOptimus.GetMedia().GetPortrait() {
+					if v == j {
+						break
+					}else {
+						baseOptimus.GetMedia().Portrait = append(baseOptimus.GetMedia().Portrait , v)
+					}
+				}
+			}
+		}else {
+			baseOptimus.GetMedia().Portrait = targetOptimus.GetMedia().GetPortrait()
+		}
+
+
+		// backdrop
+		if len(baseOptimus.GetMedia().GetBackdrop()) > 0 {
+			for _, v := range targetOptimus.GetMedia().GetBackdrop() {
+				// check if already present, if not add
+				for _, j := range baseOptimus.GetMedia().GetBackdrop() {
+					if v == j {
+						break
+					}else {
+						baseOptimus.GetMedia().Backdrop = append(baseOptimus.GetMedia().Backdrop , v)
+					}
+				}
+			}
+		}else {
+			baseOptimus.GetMedia().Backdrop = targetOptimus.GetMedia().GetBackdrop()
+		}
+
+
+		//banner
+		if len(baseOptimus.GetMedia().GetBanner()) > 0 {
+			for _, v := range targetOptimus.GetMedia().GetBanner() {
+				// check if already present, if not add
+				for _, j := range baseOptimus.GetMedia().GetBanner() {
+					if v == j {
+						break
+					}else {
+						baseOptimus.GetMedia().Banner = append(baseOptimus.GetMedia().Banner , v)
+					}
+				}
+			}
+		}else {
+			baseOptimus.GetMedia().Banner = targetOptimus.GetMedia().GetBanner()
+		}
+
+		//Video
+		if len(baseOptimus.GetMedia().GetVideo()) > 0 {
+			for _, v := range targetOptimus.GetMedia().GetVideo() {
+				// check if already present, if not add
+				for _, j := range baseOptimus.GetMedia().GetVideo() {
+					if v == j {
+						break
+					}else {
+						baseOptimus.GetMedia().Video = append(baseOptimus.GetMedia().Video , v)
+					}
+				}
+			}
+		}else {
+			baseOptimus.GetMedia().Video = targetOptimus.GetMedia().GetVideo()
+		}
+
+
+
+		// set the Tile type if the video url is avaliable
+		if len(baseOptimus.GetMedia().GetVideo()) > 0 {
+			baseOptimus.TileType = pb.TileType_VideoTile
+		}
+
+		// content Part
+		for _, v := range targetOptimus.GetContent().GetSources() {
+			for _, j := range baseOptimus.GetContent().GetSources() {
+				if v == j {
+					break
+				}else {
+					baseOptimus.GetContent().Sources = append(baseOptimus.GetContent().Sources, v)
+				}
+			}
+		}
+
+
+
+
+		// metadata part
+
+		// imdb
+		if targetOptimus.GetMetadata().GetImdbId() != "" {
+			baseOptimus.GetMetadata().ImdbId = targetOptimus.GetMetadata().GetImdbId()
+		}
+
+		//sysnopsis
+		if targetOptimus.GetMetadata().GetSynopsis() != "" {
+			baseOptimus.GetMetadata().Synopsis = targetOptimus.GetMetadata().GetSynopsis()
+		}
+
+		//Country
+		if len(targetOptimus.GetMetadata().GetCountry()) > 0 {
+			for _, v := range targetOptimus.GetMetadata().GetCountry() {
+				for _, j := range baseOptimus.GetMetadata().GetCountry() {
+					if v == j {
+						break
+					}else {
+						baseOptimus.GetMetadata().Country  = append(baseOptimus.GetMetadata().Country, v)
+					}
+				}
+			}
+		}
+
+
+		//runtime
+		if targetOptimus.GetMetadata().GetRuntime() != "" {
+			baseOptimus.GetMetadata().Runtime = targetOptimus.GetMetadata().GetRuntime()
+		}
+
+		//rating
+		if targetOptimus.GetMetadata().GetRating() != 0.0 {
+			baseOptimus.GetMetadata().Rating = targetOptimus.GetMetadata().GetRating()
+		}
+
+		//releaseDate
+		if targetOptimus.GetMetadata().GetReleaseDate() != "" {
+			baseOptimus.GetMetadata().ReleaseDate = targetOptimus.GetMetadata().GetReleaseDate()
+		}
+
+		//Tags
+		if len(targetOptimus.GetMetadata().GetTags()) > 0 {
+			for _, v := range targetOptimus.GetMetadata().GetTags() {
+				for _, j := range baseOptimus.GetMetadata().GetTags() {
+					if v == j {
+						break
+					}else {
+						baseOptimus.GetMetadata().Tags  = append(baseOptimus.GetMetadata().Tags, v)
+					}
+				}
+			}
+		}
+
+
+		//Year
+		if targetOptimus.GetMetadata().GetYear() != 0 && baseOptimus.GetMetadata().GetYear() == 0 {
+			baseOptimus.GetMetadata().Year = targetOptimus.GetMetadata().Year
+		}
+
+
+		//cast
+		if len(targetOptimus.GetMetadata().GetCast()) > 0 {
+			for _, v := range targetOptimus.GetMetadata().GetCast() {
+				for _, j := range baseOptimus.GetMetadata().GetCast() {
+					if v == j {
+						break
+					}else {
+						baseOptimus.GetMetadata().Cast  = append(baseOptimus.GetMetadata().Cast, v)
+					}
+				}
+			}
+		}
+
+		//director
+		if len(targetOptimus.GetMetadata().GetDirectors()) > 0 {
+			for _, v := range targetOptimus.GetMetadata().GetDirectors() {
+				for _, j := range baseOptimus.GetMetadata().GetDirectors() {
+					if v == j {
+						break
+					}else {
+						baseOptimus.GetMetadata().Directors  = append(baseOptimus.GetMetadata().Directors, v)
+					}
+				}
+			}
+		}
+
+
+		//genre
+		if len(targetOptimus.GetMetadata().GetGenre()) > 0 {
+			for _, v := range targetOptimus.GetMetadata().GetGenre() {
+				for _, j := range baseOptimus.GetMetadata().GetGenre() {
+					if v == j {
+						break
+					}else {
+						baseOptimus.GetMetadata().Genre  = append(baseOptimus.GetMetadata().Genre, v)
+					}
+				}
+			}
+		}
+
+		// categories
+		if len(targetOptimus.GetMetadata().GetCategories()) > 0 {
+			for _, v := range targetOptimus.GetMetadata().GetCategories() {
+				for _, j := range baseOptimus.GetMetadata().GetCategories() {
+					if v == j {
+						break
+					}else {
+						baseOptimus.GetMetadata().Categories  = append(baseOptimus.GetMetadata().Categories, v)
+					}
+				}
+			}
+		}
+
+		// languages
+		if len(targetOptimus.GetMetadata().GetLanguages()) > 0 {
+			for _, v := range targetOptimus.GetMetadata().GetLanguages() {
+				for _, j := range baseOptimus.GetMetadata().GetLanguages() {
+					if v == j {
+						break
+					}else {
+						baseOptimus.GetMetadata().Languages  = append(baseOptimus.GetMetadata().Languages, v)
+					}
+				}
+			}
+		}
+
+		//kidsSafe
+		baseOptimus.GetMetadata().KidsSafe = targetOptimus.GetMetadata().KidsSafe
+
+		//viewCount TODO alag game hai iska Please keep a not of it. ****************************************
+		if baseOptimus.GetMetadata().ViewCount == 0.0 {
+			baseOptimus.GetMetadata().ViewCount = targetOptimus.GetMetadata().ViewCount
+		}
+
+
+		//season
+		if baseOptimus.GetMetadata().GetSeason() == 0 {
+			baseOptimus.GetMetadata().Season = targetOptimus.GetMetadata().GetSeason()
+		}
+
+		//episode
+		if baseOptimus.GetMetadata().GetEpisode() == 0 {
+			baseOptimus.GetMetadata().Episode = targetOptimus.GetMetadata().GetEpisode()
+		}
+
+		//Part
+		if baseOptimus.GetMetadata().GetPart() == 0 {
+			baseOptimus.GetMetadata().Part = targetOptimus.GetMetadata().GetPart()
+		}
+
+		//mood TODO check the login of it in future. Subjected to change **************************
+		if len(baseOptimus.GetMetadata().GetMood()) > 0 {
+			baseOptimus.GetMetadata().Mood = targetOptimus.GetMetadata().Mood
+		}
+		ts, _ := ptypes.TimestampProto(time.Now())
+		baseOptimus.UpdatedAt = ts
+		_, err = baseContent.ReplaceOne(ctx, queryFilter, baseOptimus)
+		if err != nil {
+			return err
+		}
+
+
+		// making monetize
+
+
+		// case 1 if the content is not present
+		//montizeFilter = bson.D{{""}}
+
+	}
+
+	return nil
+}
+
+
 
 func GenerateRandomBytes(n int) ([]byte, error) {
 	b := make([]byte, n)

@@ -58,6 +58,14 @@ enum Monetize {
     Rent = 3;
 }
 
+enum TileType {
+    ImageTile = 0;
+    VideoTile = 1;
+    FeatureTile = 2;
+    AdvertiseTile = 3;
+    CarouselTile = 4;
+}
+
 message ContentAvaliable {
      Monetize monetize = 6;
      string targetId = 1;
@@ -92,7 +100,7 @@ message Metadata {
     string title = 20;
     string imdbId = 1;
     string synopsis = 2;
-    string country = 3;
+    repeated string country = 3;
     string runtime = 4;
     double rating = 5;
     string releaseDate = 6;
@@ -114,7 +122,7 @@ message Metadata {
 message Optimus {
      Media media = 6;
      string ref_id = 1;
-     int32 tileType = 2;
+     TileType tileType = 2;
      Content content = 3;
      Metadata metadata = 4;
      google.protobuf.Timestamp createdAt = 7;
