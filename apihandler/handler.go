@@ -9,6 +9,7 @@ import (
 	"github.com/golang/protobuf/ptypes"
 	pb "github.com/transavro/ContentGeneratorService/proto"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/net/context"
 	"io/ioutil"
@@ -131,45 +132,6 @@ type SchemarooData struct {
 }
 
 
-// native cats helper strcut
-type NativeContent struct {
-	Media struct {
-		Landscape []string      `json:"landscape"`
-		Portrait  []string      `json:"portrait"`
-		Backdrop  []string      `json:"backdrop"`
-		Banner    []string      `json:"banner"`
-		Video     []interface{} `json:"video"`
-	} `json:"media"`
-	Refid    string `json:"refid"`
-	Tiletype int    `json:"tiletype"`
-	Content  struct {
-		Publishstate bool     `json:"publishstate"`
-		Detailpage   bool     `json:"detailpage"`
-		Sources      []string `json:"sources"`
-	} `json:"content"`
-	Metadata struct {
-		Title       string        `json:"title"`
-		Imdbid      string        `json:"imdbid"`
-		Synopsis    string        `json:"synopsis"`
-		Country     []string      `json:"country"`
-		Runtime     string        `json:"runtime"`
-		Rating      int           `json:"rating"`
-		Releasedate string        `json:"releasedate"`
-		Tags        interface{}   `json:"tags"`
-		Year        int           `json:"year"`
-		Cast        []string      `json:"cast"`
-		Directors   []string      `json:"directors"`
-		Genre       []string      `json:"genre"`
-		Categories  []string      `json:"categories"`
-		Languages   []string `json:"languages"`
-		Kidssafe    bool          `json:"kidssafe"`
-		Viewcount   int           `json:"viewcount"`
-		Season      int           `json:"season"`
-		Episode     int           `json:"episode"`
-		Part        int           `json:"part"`
-	} `json:"metadata"`
-}
-
 //AltBalaji
 type AltBalaji struct {
 	Message   string `json:"message,omitempty"`
@@ -190,133 +152,402 @@ type AltBalaji struct {
 }
 
 type Server struct {
-	OptimusDB *mongo.Database
+	OptimusDB  *mongo.Database
 	NativeTile *mongo.Collection
 }
 
+const (
+	optimusDateFormat = "24-09-2009"
+	nativeDateFormat  = "24 Sep 2009"
+)
+
 func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGeneratorService_FetchNativeDataServer) error {
 	log.Println("Hit NAtive")
-	cur, err := s.OptimusDB.Collection("nativecontents").Find(context.Background(), bson.D{{}})
-	if err !=  nil {
+	cur, err := s.NativeTile.Find(stream.Context(), bson.D{{}})
+	if err != nil {
 		return err
 	}
 
-	defer  cur.Close(context.Background())
-	for cur.Next(context.Background()) {
-		var nativeCats NativeContent
-		err = cur.Decode(&nativeCats)
+	for cur.Next(stream.Context()) {
+		var prime primitive.D
+		var media pb.Media
+		var content pb.Content
+		var metadata pb.Metadata
+		var ref_id string
+		var contentAvlb pb.ContentAvaliable
+		var optimus pb.Optimus
+		var play pb.Play
+
+
+		err = cur.Decode(&prime)
 		if err != nil {
-			log.Println("error while decoding ")
 			return err
 		}
-		
-		// media 
-		var Media pb.Media
-		if len(nativeCats.Media.Landscape) > 0 {
-			for _, v := range nativeCats.Media.Landscape {
-				Media.Landscape = append(Media.Landscape, fmt.Sprint(v))
-			}
-		}
-		if len(nativeCats.Media.Portrait) > 0 {
-			for _, v := range nativeCats.Media.Portrait {
-				Media.Portrait = append(Media.Portrait, fmt.Sprint(v))
-			}
-		}
-		if len(nativeCats.Media.Backdrop) > 0 {
-			for _, v := range nativeCats.Media.Backdrop {
-				Media.Backdrop = append(Media.Backdrop, fmt.Sprint(v))
-			}
-		}
-		if len(nativeCats.Media.Banner) > 0 {
-			for _, v := range nativeCats.Media.Banner {
-				Media.Banner = append(Media.Banner, fmt.Sprint(v))
-			}
-		}
-		if len(nativeCats.Media.Video) > 0 {
-			for _, v := range nativeCats.Media.Video {
-				Media.Video = append(Media.Video, fmt.Sprint(v))
+
+
+		for k1, v1 := range prime.Map() {
+
+			if k1 == "ref_id" {
+				if av, ok := v1.(string); ok && av != "" {
+					ref_id = av
+				}
+			}else if k1 == "posters" {
+				//making media
+				for k2, v2 := range v1.(primitive.D).Map() {
+
+					if k2 == "landscape" {
+						media.Backdrop = []string{}
+						if pa, ok := v2.(primitive.A); ok && len(pa) > 0 {
+							for _, value := range pa {
+								if value == "N/A" || value == "n/a" || value == "null" || value == "" || value == "Null" {
+									continue
+								}
+								media.Landscape = append(media.Landscape, fmt.Sprint(value))
+							}
+						}else {
+							media.Landscape = []string{}
+						}
+					} else if k2 == "portrait" {
+						media.Backdrop = []string{}
+						if pa, ok := v2.(primitive.A); ok && len(pa) > 0 {
+							for _, value := range pa {
+								if value == "N/A" || value == "n/a" || value == "null" || value == "" || value == "Null" {
+									continue
+								}
+								media.Portrait = append(media.Portrait, fmt.Sprint(value))
+							}
+						}else {
+							media.Portrait = []string{}
+						}
+					} else if k2 == "banner" {
+						media.Backdrop = []string{}
+						if pa, ok := v2.(primitive.A); ok && len(pa) > 0 {
+							for _, value := range pa {
+								if value == "N/A" || value == "n/a" || value == "null" || value == "" || value == "Null" {
+									continue
+								}
+								media.Banner = append(media.Banner, fmt.Sprint(value))
+							}
+						}else {
+							media.Banner = []string{}
+						}
+					} else if k2 == "backdrop" {
+						media.Backdrop = []string{}
+						if pa, ok := v2.(primitive.A); ok && len(pa) > 0 {
+							for _, value := range pa {
+								if value == "N/A" || value == "n/a" || value == "null" || value == "" || value == "Null" {
+									continue
+								}
+								media.Backdrop = append(media.Backdrop, fmt.Sprint(value))
+							}
+						}else {
+							media.Backdrop = []string{}
+						}
+					}
+				}
+			}else if k1 == "content" {
+				// making content
+				for k3, v3 := range v1.(primitive.D).Map() {
+					if k3 == "source" {
+						content.Sources = []string{}
+						if av, ok := v3.(string); ok && av != "" {
+							content.Sources = append(content.Sources, av)
+							contentAvlb.Source = av
+							contentAvlb.TargetId = ref_id
+						}
+					} else if k3 == "publishState" {
+						if av, ok := v3.(bool); ok {
+							content.PublishState = av
+						}
+					} else if k3 == "detailPage" {
+						if av, ok := v3.(bool); ok {
+							content.DetailPage = av
+						}
+					}else if k3 == "package" {
+						if av, ok := v3.(string); ok && av != "" {
+							contentAvlb.Package = av
+						}
+					}else if k3 == "type" {
+						if av, ok := v3.(string); ok && av != "" {
+							if av == "START" || av == "Start" || av == "start" {
+								contentAvlb.Type = "CW_THIRDPARTY"
+							}else {
+								contentAvlb.Type = av
+							}
+						}else {
+							contentAvlb.Type = "CW_THIRDPARTY"
+						}
+					}else if k3 == "target" {
+						contentAvlb.Target  = ""
+						if av, ok := v3.(primitive.A); ok && len(av) > 0 {
+							for _, value := range av {
+								if value == "N/A" || value == "n/a" || value == "null" || value == "" || value == "Null" {
+									continue
+								}
+								contentAvlb.Target = fmt.Sprint(value)
+							}
+						}
+					}
+				}
+			}else if k1 == "metadata" {
+				// making metadata
+				for k4, v4 := range v1.(primitive.D).Map() {
+					if k4 == "title" {
+						if av, ok := v4.(string); ok && av != "" {
+							metadata.Title = av
+						}
+					} else if k4 == "customTags" {
+						metadata.Tags = []string{}
+						if pa, ok := v4.(primitive.A); ok && len(pa) > 0 {
+							for _, value := range pa {
+								if value == "N/A" || value == "n/a" || value == "null" || value == "" || value == "Null" {
+									continue
+								}
+								metadata.Tags = append(metadata.Tags, fmt.Sprint(value))
+							}
+						}else {
+							metadata.Tags = []string{}
+						}
+					} else if k4 == "releaseDate" {
+						if av, ok := v4.(string); ok && av != "" {
+							metadata.ReleaseDate = av
+						}
+					} else if k4 == "imdbid" {
+						if av, ok := v4.(string); ok && av != "" {
+							metadata.ImdbId = av
+						}
+					} else if k4 == "synopsis" {
+						if av, ok := v4.(string); ok && av != "" {
+							metadata.Synopsis = av
+						}
+					} else if k4 == "runtime" {
+						if av, ok := v4.(string); ok && av != "" {
+							metadata.Runtime = av
+						}
+					} else if k4 == "country" {
+						metadata.Country = []string{}
+						if pa, ok := v4.(primitive.A); ok && len(pa) > 0 {
+							for _, value := range pa {
+								if value == "N/A" || value == "n/a" || value == "null" || value == "" || value == "Null" {
+									continue
+								}
+								metadata.Country = append(metadata.Country, strings.TrimSpace(strings.ToUpper(fmt.Sprint(value))))
+							}
+						}else {
+							metadata.Country = []string{}
+						}
+					} else if k4 == "rating" {
+						if av, ok := v4.(int); ok && av != 0 {
+							metadata.Rating = float64(av)
+						}else if av, ok := v4.(int32); ok && av != 0 {
+							metadata.Rating = float64(av)
+						}else if av, ok := v4.(int64); ok && av != 0 {
+							metadata.Rating = float64(av)
+						} else if av, ok := v4.(float64); ok && av != 0 {
+							metadata.Rating = av
+						} else if av, ok := v4.(float32); ok && av != 0 {
+							metadata.Rating = float64(av)
+						} else {
+							metadata.Rating = 0.0
+						}
+					} else if k4 == "cast" {
+						metadata.Cast = []string{}
+						if pa, ok := v4.(primitive.A); ok && len(pa) > 0 {
+							for _, value := range pa {
+								if value == "N/A" || value == "n/a" || value == "null" || value == "" || value == "Null" {
+									continue
+								}
+								metadata.Cast = append(metadata.Cast, strings.TrimSpace(fmt.Sprint(value)))
+							}
+						}else {
+							metadata.Cast = []string{}
+						}
+					} else if k4 == "directors" {
+						metadata.Directors = []string{}
+						if pa, ok := v4.(primitive.A); ok && len(pa) > 0 {
+							for _, value := range pa {
+								if value == "N/A" || value == "n/a" || value == "null" || value == "" || value == "Null" {
+									continue
+								}
+								metadata.Directors = append(metadata.Directors, strings.TrimSpace(fmt.Sprint(value)))
+							}
+						}else {
+							metadata.Directors = []string{}
+						}
+					} else if k4 == "genre" {
+						metadata.Genre = []string{}
+						if pa, ok := v4.(primitive.A); ok && len(pa) > 0 {
+							for _, value := range pa {
+								if value == "N/A" || value == "n/a" || value == "null" || value == "" || value == "Null" {
+									continue
+								}
+								metadata.Genre = append(metadata.Genre, strings.TrimSpace(fmt.Sprint(value)))
+							}
+						}else {
+							metadata.Genre = []string{}
+						}
+					} else if k4 == "categories" {
+						metadata.Categories = []string{}
+						if pa, ok := v4.(primitive.A); ok && len(pa) > 0 {
+							for _, value := range pa {
+								if value == "N/A" || value == "n/a" || value == "null" || value == "" || value == "Null" {
+									continue
+								}
+
+								//TODO chaning categories to make the whole categories of third party at one ground.
+								categories := strings.TrimSpace(fmt.Sprint(value))
+								if categories == "Series" || categories == "Series with Seasons" {
+									metadata.Categories = append(metadata.Categories, "TV series")
+								}else if categories == "Kids Rhymes" {
+									metadata.Categories = append(metadata.Categories, "Kids-Rhymes")
+								}else if categories == "Kid Movies" {
+									metadata.Categories = append(metadata.Categories, "Kids-Movies")
+								}else {
+									metadata.Categories = append(metadata.Categories, strings.TrimSpace(fmt.Sprint(value)))
+								}
+
+							}
+						}else {
+							metadata.Categories = []string{}
+						}
+					} else if k4 == "languages" {
+						metadata.Languages = []string{}
+						if pa, ok := v4.(primitive.A); ok && len(pa) > 0 {
+							for _, value := range pa {
+								if value == "N/A" || value == "n/a" || value == "null" || value == "" || value == "Null" {
+									continue
+								}
+								metadata.Languages = append(metadata.Languages, strings.TrimSpace(fmt.Sprint(value)))
+							}
+						}else {
+							metadata.Languages = []string{}
+						}
+					} else if k4 == "year" {
+						if av, ok := v4.(int); ok && av != 0 {
+							metadata.Year = int32(av)
+						}else if av, ok := v4.(int32); ok && av != 0 {
+							metadata.Year = av
+						} else if av, ok := v4.(int64); ok && av != 0 {
+							metadata.Year = int32(av)
+						} else if av, ok := v4.(float64); ok && av != 0 {
+							metadata.Year = int32(av)
+						} else if av, ok := v4.(float32); ok && av != 0 {
+							metadata.Year = int32(av)
+						} else {
+							metadata.Year = 0
+						}
+					} else if k4 == "season" {
+						if av, ok := v4.(int); ok && av != 0 {
+							metadata.Season = int32(av)
+						}else if av, ok := v4.(int32); ok && av != 0 {
+							metadata.Season = av
+						} else if av, ok := v4.(int64); ok && av != 0 {
+							metadata.Season = int32(av)
+						} else if av, ok := v4.(float64); ok && av != 0 {
+							metadata.Season = int32(av)
+						} else if av, ok := v4.(float32); ok && av != 0 {
+							metadata.Season = int32(av)
+						} else {
+							metadata.Season = 0
+						}
+					}  else if k4 == "part" {
+						if av, ok := v4.(int); ok && av != 0 {
+							metadata.Part = int32(av)
+						}else if av, ok := v4.(int32); ok && av != 0 {
+							metadata.Part = av
+						} else if av, ok := v4.(int64); ok && av != 0 {
+							metadata.Part = int32(av)
+						} else if av, ok := v4.(float64); ok && av != 0 {
+							metadata.Part = int32(av)
+						} else if av, ok := v4.(float32); ok && av != 0 {
+							metadata.Part = int32(av)
+						} else {
+							metadata.Part = 0
+						}
+					} else if k4 == "episode" {
+						if av, ok := v4.(int); ok && av != 0 {
+							metadata.Episode = int32(av)
+						}else if av, ok := v4.(int32); ok && av != 0 {
+							metadata.Episode = av
+						} else if av, ok := v4.(int64); ok && av != 0 {
+							metadata.Episode = int32(av)
+						} else if av, ok := v4.(float64); ok && av != 0 {
+							metadata.Episode = int32(av)
+						} else if av, ok := v4.(float32); ok && av != 0 {
+							metadata.Episode = int32(av)
+						} else {
+							metadata.Episode = 0
+						}
+					}else if k4 == "viewCount" {
+						if av, ok := v4.(int); ok && av != 0 {
+							metadata.ViewCount = float64(av)
+						}else if av, ok := v4.(int32); ok && av != 0 {
+							metadata.ViewCount = float64(av)
+						}else if av, ok := v4.(int64); ok && av != 0 {
+							metadata.ViewCount = float64(av)
+						} else if av, ok := v4.(float64); ok && av != 0 {
+							metadata.ViewCount = av
+						} else if av, ok := v4.(float32); ok && av != 0 {
+							metadata.ViewCount = float64(av)
+						} else {
+							metadata.ViewCount = 0.0
+						}
+					}else if k4 == "kidsSafe" {
+						if av, ok := v4.(bool); ok {
+							metadata.KidsSafe = av
+						}
+					}
+					metadata.Mood = []int32{}
+				}
 			}
 		}
 
-		// content
-		var Content pb.Content
-		Content.PublishState = nativeCats.Content.Publishstate
-		Content.DetailPage = nativeCats.Content.Detailpage
-		Content.Sources = nativeCats.Content.Sources
+		ts, _ := ptypes.TimestampProto(time.Now())
+		contentAvlb.Monetize = -1
+		media.Video = []string{}
+		play = pb.Play{
+			ContentAvailable:     []*pb.ContentAvaliable{&contentAvlb},
+			RefId:                ref_id,
+		}
 
-		//Metadata
-		var Metadata pb.Metadata
-		Metadata.Title = nativeCats.Metadata.Title
-		Metadata.ImdbId = nativeCats.Metadata.Imdbid
-		Metadata.Synopsis = nativeCats.Metadata.Synopsis
-		Metadata.Country = nativeCats.Metadata.Country
-		Metadata.Runtime = nativeCats.Metadata.Runtime
-		//if nativeCats.Metadata.Rating != 0 {
-		//	switch i := nativeCats.Metadata.Rating.(type) {
-		//	case int:
-		//		{
-		//			Metadata.Rating = float64(i)
-		//		}
-		//	case float32:
-		//		{
-		//			Metadata.Rating = float64(i)
-		//		}
-		//	case float64:
-		//		{
-		//			Metadata.Rating = i
-		//		}
-		//	}
-		//}
-
-		Metadata.ReleaseDate = nativeCats.Metadata.Releasedate
-		Metadata.Country = nativeCats.Metadata.Country
-
-		//if nativeCats.Metadata.Viewcount != 0 {
-		//	switch i := nativeCats.Metadata.Viewcount.(type) {
-		//	case int:
-		//		{
-		//			Metadata.ViewCount = float64(i)
-		//		}
-		//	case float32:
-		//		{
-		//			Metadata.ViewCount = float64(i)
-		//		}
-		//	case float64:
-		//		{
-		//			Metadata.ViewCount = i
-		//		}
-		//	}
-		//}
-
-		Metadata.KidsSafe = nativeCats.Metadata.Kidssafe
-		Metadata.Cast = nativeCats.Metadata.Cast
-		Metadata.Directors = nativeCats.Metadata.Directors
-		Metadata.Categories = nativeCats.Metadata.Categories
-		Metadata.Languages = nativeCats.Metadata.Languages
-		//if nativeCats.Metadata.Year != 0 {
-		//	Metadata.Year = int32(nativeCats.Metadata.Year)
-		//}
-		//Metadata.Season = int32(nativeCats.Metadata.Season)
-		//Metadata.Episode = int32(nativeCats.Metadata.Season)
-		//Metadata.Part = int32(nativeCats.Metadata.Season)
-		//if len(nativeCats.Metadata.Mood) > 0 {
-		//	for _, v := range nativeCats.Metadata.Mood {
-		//		Metadata.Mood = append(Metadata.Mood, v.(int32))
-		//	}
-		//}
-		
-		err = stream.Send(&pb.Optimus{
-			Media:                &Media,
-			RefId:                nativeCats.Refid,
+		optimus = pb.Optimus{
+			Media:                &media,
+			RefId:                ref_id,
 			TileType:             pb.TileType_ImageTile,
-			Content:              &Content,
-			Metadata:             &Metadata,
-		})
-		if err != nil {
-			return err
+			Content:              &content,
+			Metadata:             &metadata,
+			CreatedAt:            ts,
+		}
+
+
+
+		// check if already presnet
+		log.Println("Checking if already present ===>   ", optimus.GetMetadata().GetTitle())
+		result := s.OptimusDB.Collection("test_native_monetize").FindOne(context.Background(), bson.D{{"metadata.title", optimus.Metadata.Title}})
+		if result.Err() != nil {
+			if result.Err() == mongo.ErrNoDocuments {
+				log.Println("Inserting..")
+				_, err = s.OptimusDB.Collection("test_native_content").InsertOne(context.Background(), optimus)
+				if err != nil {
+					return err
+				}
+				_, err = s.OptimusDB.Collection("test_native_monetize").InsertOne(context.Background(), play)
+				if err != nil {
+					return err
+				}
+				log.Println("sending data to client...")
+				err = stream.Send(&optimus)
+				if err != nil {
+					return err
+				}
+			} else {
+				return result.Err()
+			}
+		} else {
+			log.Println("content already present", optimus.GetMetadata().GetTitle())
 		}
 	}
-	return nil
+	return cur.Close(stream.Context())
 }
 
 func (s *Server) FetchJustWatch(request *pb.Request, stream pb.ContentGeneratorService_FetchJustWatchServer) error {
@@ -335,6 +566,7 @@ func (s *Server) FetchHungamaPlay(request *pb.Request, stream pb.ContentGenerato
 	for _, action := range hungamaActions {
 		for _, genre := range hungamaGenre {
 			for _, lang := range hungamalanguage {
+
 				req, err := http.NewRequest("GET", "http://affapi.hungama.com/v1/feeds/listing.json?", nil)
 				if err != nil {
 					return err
@@ -476,21 +708,74 @@ func (s *Server) FetchHungamaPlay(request *pb.Request, stream pb.ContentGenerato
 
 						if tile["title"] != nil && tile["title"] != "" {
 							metadata.Title = strings.ToValidUTF8(fmt.Sprint(tile["title"]), "")
-						}else if tile["show_name"] != nil && tile["show_name"] != "" {
+						} else if tile["show_name"] != nil && tile["show_name"] != "" {
 							metadata.Title = strings.ToValidUTF8(fmt.Sprint(tile["show_name"]), "")
 						}
 						metadata.Country = []string{fmt.Sprint(tile["country"])}
-						metadata.Cast = strings.Split(strings.TrimSpace(fmt.Sprint(tile["actors"])), ",")
-						metadata.Directors = strings.Split(fmt.Sprint(tile["director"]), ",")
-						metadata.Genre = strings.Split(fmt.Sprint(tile["genre"]), ",")
-						metadata.Languages = strings.Split(fmt.Sprint(tile["language"]), ",")
+
+						if tile["actors"] != nil && tile["actors"] != "" {
+							tags := strings.Split(fmt.Sprint(tile["actors"]), ",")
+							for _, tag := range tags {
+								metadata.Cast = append(metadata.Cast, strings.TrimSpace(tag))
+							}
+						} else {
+							metadata.Cast = []string{}
+						}
+
+						if tile["director"] != nil && tile["director"] != "" {
+							tags := strings.Split(fmt.Sprint(tile["director"]), ",")
+							for _, tag := range tags {
+								metadata.Directors = append(metadata.Directors, strings.TrimSpace(tag))
+							}
+						} else {
+							metadata.Directors = []string{}
+						}
+
+						if tile["genre"] != nil && tile["genre"] != "" {
+							tags := strings.Split(fmt.Sprint(tile["genre"]), ",")
+							for _, tag := range tags {
+								metadata.Genre = append(metadata.Genre, strings.TrimSpace(tag))
+							}
+						} else {
+							metadata.Genre = []string{}
+						}
+
+						if tile["language"] != nil && tile["language"] != "" {
+							tags := strings.Split(fmt.Sprint(tile["language"]), ",")
+							for _, tag := range tags {
+								metadata.Languages = append(metadata.Languages, strings.TrimSpace(tag))
+							}
+						} else {
+							metadata.Languages = []string{}
+						}
+
 						if tile["tags"] != nil && tile["tags"] != "" {
-							metadata.Tags = strings.Split(strings.TrimSpace(fmt.Sprint(tile["tags"])), ",")
+							tags := strings.Split(fmt.Sprint(tile["tags"]), ",")
+							for _, tag := range tags {
+								metadata.Tags = append(metadata.Tags, strings.TrimSpace(tag))
+							}
 						} else {
 							metadata.Tags = []string{}
 						}
+
 						metadata.ReleaseDate = fmt.Sprint(tile["releasedate"])
-						metadata.Categories = strings.Split(fmt.Sprint(tile["type"]), ",")
+
+						if tile["type"] != nil && tile["type"] != "" {
+							tags := strings.Split(fmt.Sprint(tile["type"]), ",")
+							for _, tag := range tags {
+								if strings.TrimSpace(tag) == "Movie"{
+									metadata.Categories = append(metadata.Categories, "Movies" )
+								}else if strings.TrimSpace(tag) == "Short Films"{
+									metadata.Categories = append(metadata.Categories, "Short Film" )
+								}else {
+									metadata.Categories = append(metadata.Categories, strings.TrimSpace(tag) )
+								}
+
+							}
+						} else {
+							metadata.Categories = []string{}
+						}
+
 						if tile["nudity"] == 0 {
 							metadata.KidsSafe = true
 						} else {
@@ -573,11 +858,11 @@ func (s *Server) FetchHungamaPlay(request *pb.Request, stream pb.ContentGenerato
 
 						ts, _ := ptypes.TimestampProto(time.Now())
 						log.Println(ref_id)
-						optimus := &pb.Optimus{Metadata: &metadata, RefId: ref_id, Content: &content, Media: &media, CreatedAt: ts, TileType:pb.TileType_ImageTile}
+						optimus := &pb.Optimus{Metadata: &metadata, RefId: ref_id, Content: &content, Media: &media, CreatedAt: ts, TileType: pb.TileType_ImageTile}
 
 						// check if already presnet
 						log.Println("Checking if already present ===>   ", optimus.GetMetadata().GetTitle())
-						result := s.OptimusDB.Collection("test_hungama_monetize").FindOne(context.Background(), bson.D{{"contentavailable.targetid", optimus.GetMetadata().GetTitle()}})
+						result := s.OptimusDB.Collection("test_hungama_monetize").FindOne(context.Background(), bson.D{{"contentavailable.targetid", contentAvlb.GetTargetId()}})
 						if result.Err() != nil {
 							if result.Err() == mongo.ErrNoDocuments {
 								log.Println("Inserting..")
@@ -681,7 +966,19 @@ func (s *Server) FetchShemaroo(request *pb.Request, stream pb.ContentGeneratorSe
 				if item.Rating != 0 {
 					metadata.Rating = float64(item.Rating)
 				}
-				metadata.Categories = []string{item.CatalogObject.FriendlyID, item.CatalogObject.PlanCategoryType}
+
+				if item.CatalogObject.FriendlyID == "kids-movie" || item.CatalogObject.PlanCategoryType == "kids-movie" {
+					metadata.Categories = []string{"Kids-Movies"}
+				}else if   item.CatalogObject.FriendlyID == "kids-rhymes" || item.CatalogObject.PlanCategoryType == "kids-rhymes" {
+					metadata.Categories = []string{"Kids-Rhymes"}
+				} else if  item.CatalogObject.FriendlyID == "kids-shows" || item.CatalogObject.PlanCategoryType == "kids-shows" {
+					metadata.Categories = []string{"Kids-Shows"}
+				}else if  item.CatalogObject.FriendlyID == "bhakti" || item.CatalogObject.PlanCategoryType == "bhakti" {
+					metadata.Categories = []string{"Devotional Videos"}
+				} else {
+					metadata.Categories = []string{item.CatalogObject.FriendlyID}
+				}
+
 				if item.Language != "" {
 					metadata.Languages = []string{item.Language}
 				}
@@ -699,7 +996,6 @@ func (s *Server) FetchShemaroo(request *pb.Request, stream pb.ContentGeneratorSe
 						}
 					}
 				}
-
 
 				//TODO setting default cats and director
 				metadata.Cast = []string{}
@@ -722,11 +1018,13 @@ func (s *Server) FetchShemaroo(request *pb.Request, stream pb.ContentGeneratorSe
 
 				if item.ItemCaption != "" {
 					var tag = []string{}
-					for _, v := range  strings.Split(item.ItemCaption, "|"){
+					for _, v := range strings.Split(item.ItemCaption, "|") {
 						tag = append(tag, strings.TrimSpace(v))
 					}
 					metadata.Tags = tag
 				}
+
+				metadata.Mood = []int32{}
 
 				// creating media
 				var media pb.Media
@@ -816,7 +1114,7 @@ func (s *Server) FetchShemaroo(request *pb.Request, stream pb.ContentGeneratorSe
 
 				// check if already presnet
 				log.Println("Checking if already present ===>   ", optimus.GetMetadata().GetTitle())
-				result := s.OptimusDB.Collection("test_schemaroo_monetize").FindOne(context.Background(), bson.D{{"contentavailable.targetid", optimus.Metadata.Title}})
+				result := s.OptimusDB.Collection("test_schemaroo_monetize").FindOne(context.Background(), bson.D{{"contentavailable.targetid", contentAvlb.GetTargetId()}})
 				if result.Err() != nil {
 					if result.Err() == mongo.ErrNoDocuments {
 						log.Println("Inserting..")
@@ -899,19 +1197,21 @@ func (s *Server) FetchAltBalaji(request *pb.Request, stream pb.ContentGeneratorS
 				return err1
 			}
 
-			log.Println(altbaljivar.Data.Title ,"   ================    " ,fmt.Sprint(tileid["id"]))
+			log.Println(altbaljivar.Data.Title, "   ================    ", fmt.Sprint(tileid["id"]))
 
 			//making metadata
 			var metadata pb.Metadata
 			metadata.Title = altbaljivar.Data.Title
 			metadata.Cast = altbaljivar.Data.PrincipalCast
+			metadata.Tags = []string{altbaljivar.Data.TitleType}
 			metadata.Directors = altbaljivar.Data.Directors
-			metadata.ReleaseDate = fmt.Sprintf("%s-%s-%s","02","01",altbaljivar.Data.ReleaseDate)
+			metadata.ReleaseDate = fmt.Sprintf("%s-%s-%s", "02", "01", altbaljivar.Data.ReleaseDate)
 			metadata.Synopsis = altbaljivar.Data.Description
 			metadata.Categories = []string{altbaljivar.Data.TitleType}
 			metadata.Languages = []string{}
 			metadata.Genre = altbaljivar.Data.Genres
 			metadata.Country = []string{"INDIA"}
+			metadata.Mood = []int32{}
 
 			//media
 			var media pb.Media
@@ -935,13 +1235,13 @@ func (s *Server) FetchAltBalaji(request *pb.Request, stream pb.ContentGeneratorS
 			ts, _ := ptypes.TimestampProto(time.Now())
 
 			optimus := &pb.Optimus{
-				Media:                &media,
-				RefId:                ref_id,
-				TileType:             pb.TileType_ImageTile,
-				Content:              &content,
-				Metadata:             &metadata,
-				CreatedAt:            ts,
-				UpdatedAt:            nil,
+				Media:     &media,
+				RefId:     ref_id,
+				TileType:  pb.TileType_ImageTile,
+				Content:   &content,
+				Metadata:  &metadata,
+				CreatedAt: ts,
+				UpdatedAt: nil,
 			}
 
 			// making montize
@@ -953,7 +1253,7 @@ func (s *Server) FetchAltBalaji(request *pb.Request, stream pb.ContentGeneratorS
 			contentAvlb.Package = "com.balaji.alt"
 			contentAvlb.Type = "CW_THIRDPARTY"
 
-			result := s.OptimusDB.Collection("test_altbalaji_monetize").FindOne(context.Background(), bson.D{{"contentavailable.targetid", optimus.GetMetadata().GetTitle()}})
+			result := s.OptimusDB.Collection("test_altbalaji_monetize").FindOne(context.Background(), bson.D{{"contentavailable.targetid", contentAvlb.GetTargetId()}})
 			if result.Err() != nil {
 				if result.Err() == mongo.ErrNoDocuments {
 					log.Println("Inserting..")
@@ -984,364 +1284,442 @@ func (s *Server) FetchAltBalaji(request *pb.Request, stream pb.ContentGeneratorS
 
 func (s *Server) MergingOptimus(request *pb.Request, stream pb.ContentGeneratorService_MergingOptimusServer) error {
 	log.Print("Hit MERGER")
-
-
-
-	return nil
+	return s.MergingParty()
 }
 
+func (s *Server) MergingParty() error {
 
-func (s *Server) MergingNative(){
+	//merging altbalaji content
+	//hungamaContent := s.OptimusDB.Collection("test_altbalaji_content")
+	//hungamaMonetize := s.OptimusDB.Collection("test_altbalaji_monetize")
 
+	//merging schemaroo content
+	//hungamaContent := s.OptimusDB.Collection("test_schemaroo_content")
+	//hungamaMonetize := s.OptimusDB.Collection("test_schemaroo_monetize")
 
+	//merging native content
+	hungamaContent := s.OptimusDB.Collection("test_native_content")
+	hungamaMonetize := s.OptimusDB.Collection("test_native_monetize")
 
-
-
-}
-
-func (s *Server) MergingHungama() error {
-	// base content where all tiles are stored.
-	//baseContent := s.OptimusDB.Collection("base_content")
-	//baseMonetize := s.OptimusDB.Collection("base_monetize")
-	//
-	////merging hungama content
+	//merging hungama content
 	//hungamaContent := s.OptimusDB.Collection("test_hungama_content")
 	//hungamaMonetize := s.OptimusDB.Collection("test_hungama_monetize")
 
-	//cur, err := hungamaContent.Find(context.Background(), bson.D{{}})
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//var optimus *pb.Optimus
-	//for cur.Next(context.Background()){
-	//	err = cur.Decode(&optimus)
-	//	if err != nil {
-	//		return err
-	//	}
-	//
-	//}
+	cur, err := hungamaContent.Find(context.Background(), bson.D{{}})
+	if err != nil {
+		return err
+	}
 
+
+	for cur.Next(context.Background()){
+		var optimus pb.Optimus
+		var play pb.Play
+		err = cur.Decode(&optimus)
+		if err != nil {
+			return err
+		}
+		result := hungamaMonetize.FindOne(context.Background(), bson.D{{"refid", optimus.GetRefId()}})
+		if result.Err() != nil {
+			return result.Err()
+		}
+		err = result.Decode(&play)
+		if err != nil {
+			return err
+		}
+
+		err = s.MergingLogic(optimus, play, context.Background())
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
-func (s *Server) MergingLogic(targetOptimus pb.Optimus, targetMonetize pb.Monetize , ctx context.Context) error {
+func (s *Server) MergingLogic(targetOptimus pb.Optimus, play pb.Play, ctx context.Context) error {
 
+	contentAvlb := play.ContentAvailable[0]
+	baseContent := s.OptimusDB.Collection("optimus_content")
+	baseMonetize := s.OptimusDB.Collection("optimus_monetize")
 
-	
-	baseContent := s.OptimusDB.Collection("base_content")
-	baseMonetize := s.OptimusDB.Collection("base_monetize")
+	// merging query
+	myStages := mongo.Pipeline{}
 
-	queryFilter :=  bson.D{{"$and", bson.A{bson.D{{"metadata.title", targetOptimus.GetMetadata().GetTitle()}},
-		bson.D{{"content.source", targetOptimus.GetContent().GetSources()[0] }}   }}}
+	// first check on the bases of title
+	myStages = append(myStages, bson.D{{"$match",  bson.D{{"metadata.title",  targetOptimus.GetMetadata().GetTitle()}}}})
 
-	
-	result := baseContent.FindOne(ctx, queryFilter)
+	// then checking on the base of language
+	myStages = append(myStages,bson.D{{"$match",  bson.D{{"metadata.languages", bson.D{{"$in", targetOptimus.GetMetadata().GetLanguages()}}}}}})
 
-	
-	if result.Err() != nil {
+	//// then checking on the base of categories
+	myStages = append(myStages,bson.D{{"$match",  bson.D{{"metadata.categories", bson.D{{"$in", targetOptimus.GetMetadata().GetCategories()}}}}}})
+
+	result , err := baseContent.Aggregate(ctx, myStages,)
+
+	if err != nil || result.Err() != nil {
 		//TODO case 1 if the content is not Present
-		if result.Err() == mongo.ErrNoDocuments {
+		log.Println("got error ", err, result.Err())
+		if err == mongo.ErrNoDocuments ||  result.Err() == mongo.ErrNoDocuments {
 			// found new coentent so interest it blindly
 			_, err := baseContent.InsertOne(ctx, targetOptimus)
 			if err != nil {
 				return err
 			}
-			_, err = baseMonetize.InsertOne(ctx, targetMonetize)
+			_, err = baseMonetize.InsertOne(ctx, pb.Play{
+				ContentAvailable:     []*pb.ContentAvaliable{contentAvlb},
+				RefId:                targetOptimus.RefId,
+			})
+			if err != nil {
+				return err
+			}
+			return nil
+		}else {
+			return result.Err()
+		}
+	} else   {
+		var noDocCounter = 0
+		for result.Next(ctx){
+			noDocCounter++
+
+			log.Println("content founded     ")
+			//TODO case 2 if the content is already Present
+			var baseOptimus *pb.Optimus
+			err := result.Decode(&baseOptimus)
+			if err != nil {
+				return err
+			}
+			log.Println("content Found *************  "+ baseOptimus.GetRefId())
+			// starting with media comparsion
+
+			// ladscape
+			if len(baseOptimus.GetMedia().GetLandscape()) > 0 {
+				for _, s2 := range targetOptimus.GetMedia().GetLandscape() {
+					var isPresent bool
+					for _, s3 := range baseOptimus.GetMedia().GetLandscape() {
+						if strings.EqualFold(s2, s3) {
+							isPresent = true
+						}
+					}
+					if isPresent == false {
+						baseOptimus.GetMedia().Landscape = append(baseOptimus.GetMedia().Landscape, s2)
+					}
+				}
+			} else {
+				baseOptimus.GetMedia().Landscape = targetOptimus.GetMedia().GetLandscape()
+			}
+
+			// portrait
+			if len(baseOptimus.GetMedia().GetPortrait()) > 0 {
+				for _, s2 := range targetOptimus.GetMedia().GetPortrait() {
+					var isPresent bool
+					for _, s3 := range baseOptimus.GetMedia().GetPortrait() {
+						if strings.EqualFold(s2, s3) {
+							isPresent = true
+						}
+					}
+					if isPresent == false {
+						baseOptimus.GetMedia().Portrait = append(baseOptimus.GetMedia().Portrait, s2)
+					}
+				}
+			} else {
+				baseOptimus.GetMedia().Portrait = targetOptimus.GetMedia().GetPortrait()
+			}
+
+			// backdrop
+			if len(baseOptimus.GetMedia().GetBackdrop()) > 0 {
+				for _, s2 := range targetOptimus.GetMedia().GetBackdrop() {
+					var isPresent bool
+					for _, s3 := range baseOptimus.GetMedia().GetBackdrop() {
+						if strings.EqualFold(s2, s3) {
+							isPresent = true
+						}
+					}
+					if isPresent == false {
+						baseOptimus.GetMedia().Backdrop = append(baseOptimus.GetMedia().Backdrop, s2)
+					}
+				}
+			} else {
+				baseOptimus.GetMedia().Backdrop = targetOptimus.GetMedia().GetBackdrop()
+			}
+
+			//banner
+			if len(baseOptimus.GetMedia().GetBanner()) > 0 {
+				for _, s2 := range targetOptimus.GetMedia().GetBanner() {
+					var isPresent bool
+					for _, s3 := range baseOptimus.GetMedia().GetBanner() {
+						if strings.EqualFold(s2, s3) {
+							isPresent = true
+						}
+					}
+					if isPresent == false {
+						baseOptimus.GetMedia().Banner = append(baseOptimus.GetMedia().Banner, s2)
+					}
+				}
+			} else {
+				baseOptimus.GetMedia().Banner = targetOptimus.GetMedia().GetBanner()
+			}
+
+			//Video
+			if len(baseOptimus.GetMedia().GetVideo()) > 0 {
+				for _, s2 := range targetOptimus.GetMedia().GetVideo() {
+					var isPresent bool
+					for _, s3 := range baseOptimus.GetMedia().GetVideo() {
+						if strings.EqualFold(s2, s3) {
+							isPresent = true
+						}
+					}
+					if isPresent == false {
+						baseOptimus.GetMedia().Video = append(baseOptimus.GetMedia().Video, s2)
+					}
+				}
+			} else {
+				baseOptimus.GetMedia().Video = targetOptimus.GetMedia().GetVideo()
+			}
+
+			// set the Tile type if the video url is avaliable
+			if len(baseOptimus.GetMedia().GetVideo()) > 0 {
+				baseOptimus.TileType = pb.TileType_VideoTile
+			}
+
+			// content Part
+			if len(baseOptimus.GetContent().GetSources()) > 0 {
+				for _, s2 := range targetOptimus.GetContent().GetSources() {
+					var isPresent bool
+					for _, s3 := range baseOptimus.GetContent().GetSources() {
+						if strings.EqualFold(s2, s3) {
+							isPresent = true
+						}
+					}
+					if isPresent == false {
+						baseOptimus.GetContent().Sources = append(baseOptimus.GetContent().Sources, s2)
+					}
+				}
+			}
+
+			// metadata part
+
+			// imdb
+			if targetOptimus.GetMetadata().GetImdbId() != "" {
+				baseOptimus.GetMetadata().ImdbId = targetOptimus.GetMetadata().GetImdbId()
+			}
+
+			//sysnopsis
+			if targetOptimus.GetMetadata().GetSynopsis() != "" {
+				baseOptimus.GetMetadata().Synopsis = targetOptimus.GetMetadata().GetSynopsis()
+			}
+
+			//Country
+			if len(baseOptimus.GetMetadata().GetCountry()) > 0 {
+				for _, s2 := range targetOptimus.GetMetadata().GetCountry() {
+					var isPresent bool
+					for _, s3 := range baseOptimus.GetMetadata().GetCountry() {
+						if strings.EqualFold(s2, s3) {
+							isPresent = true
+						}
+					}
+					if isPresent == false {
+						baseOptimus.GetMetadata().Country = append(baseOptimus.GetMetadata().Country, s2)
+					}
+				}
+			}
+
+
+			//runtime
+			if targetOptimus.GetMetadata().GetRuntime() != "" {
+				baseOptimus.GetMetadata().Runtime = targetOptimus.GetMetadata().GetRuntime()
+			}
+
+			//rating
+			if targetOptimus.GetMetadata().GetRating() != 0.0 {
+				baseOptimus.GetMetadata().Rating = targetOptimus.GetMetadata().GetRating()
+			}
+
+			//releaseDate
+			if targetOptimus.GetMetadata().GetReleaseDate() != "" {
+				baseOptimus.GetMetadata().ReleaseDate = targetOptimus.GetMetadata().GetReleaseDate()
+			}
+
+			//Tags
+			if len(baseOptimus.GetMetadata().GetTags()) > 0 {
+				for _, s2 := range targetOptimus.GetMetadata().GetTags() {
+					var isPresent bool
+					for _, s3 := range baseOptimus.GetMetadata().GetTags() {
+						if strings.EqualFold(s2, s3) {
+							isPresent = true
+						}
+					}
+					if isPresent == false {
+						baseOptimus.GetMetadata().Tags = append(baseOptimus.GetMetadata().Tags, s2)
+					}
+				}
+			}
+
+
+			//Year
+			if targetOptimus.GetMetadata().GetYear() != 0 && baseOptimus.GetMetadata().GetYear() == 0 {
+				baseOptimus.GetMetadata().Year = targetOptimus.GetMetadata().Year
+			}
+
+			//cast
+			if len(baseOptimus.GetMetadata().GetCast()) > 0 {
+				for _, s2 := range targetOptimus.GetMetadata().GetCast() {
+					var isPresent bool
+					for _, s3 := range baseOptimus.GetMetadata().GetCast() {
+						if strings.EqualFold(s2, s3) {
+							isPresent = true
+						}
+					}
+					if isPresent == false {
+						baseOptimus.GetMetadata().Cast = append(baseOptimus.GetMetadata().Cast, s2)
+					}
+				}
+			}
+
+			//director
+			if len(baseOptimus.GetMetadata().GetDirectors()) > 0 {
+				for _, s2 := range targetOptimus.GetMetadata().GetDirectors() {
+					var isPresent bool
+					for _, s3 := range baseOptimus.GetMetadata().GetDirectors() {
+						if strings.EqualFold(s2, s3) {
+							isPresent = true
+						}
+					}
+					if isPresent == false {
+						baseOptimus.GetMetadata().Directors = append(baseOptimus.GetMetadata().Directors, s2)
+					}
+				}
+			}
+
+			//genre
+			if len(baseOptimus.GetMetadata().GetGenre()) > 0 {
+				for _, s2 := range targetOptimus.GetMetadata().GetGenre() {
+					var isPresent bool
+					for _, s3 := range baseOptimus.GetMetadata().GetGenre() {
+						if strings.EqualFold(s2, s3) {
+							isPresent = true
+						}
+					}
+					if isPresent == false {
+						baseOptimus.GetMetadata().Genre = append(baseOptimus.GetMetadata().Genre, s2)
+					}
+				}
+			}
+
+			// categories
+			if len(baseOptimus.GetMetadata().GetCategories()) > 0 {
+				for _, s2 := range targetOptimus.GetMetadata().GetCategories() {
+					var isPresent bool
+					for _, s3 := range baseOptimus.GetMetadata().GetCategories() {
+						if strings.EqualFold(s2, s3) {
+							isPresent = true
+						}
+					}
+					if isPresent == false {
+						baseOptimus.GetMetadata().Categories = append(baseOptimus.GetMetadata().Categories, s2)
+					}
+				}
+			}
+
+			// languages
+			if len(baseOptimus.GetMetadata().GetLanguages()) > 0 {
+				for _, s2 := range targetOptimus.GetMetadata().GetLanguages() {
+					var isPresent bool
+					for _, s3 := range baseOptimus.GetMetadata().GetLanguages() {
+						if strings.EqualFold(s2, s3) {
+							isPresent = true
+						}
+					}
+					if isPresent == false {
+						baseOptimus.GetMetadata().Languages = append(baseOptimus.GetMetadata().Languages, s2)
+					}
+				}
+			}
+
+			//kidsSafe
+			baseOptimus.GetMetadata().KidsSafe = targetOptimus.GetMetadata().KidsSafe
+
+			//viewCount TODO alag game hai iska Please keep a note of it. ****************************************
+			if baseOptimus.GetMetadata().ViewCount == 0.0 {
+				baseOptimus.GetMetadata().ViewCount = targetOptimus.GetMetadata().ViewCount
+			}
+
+			//season
+			if baseOptimus.GetMetadata().GetSeason() == 0 {
+				baseOptimus.GetMetadata().Season = targetOptimus.GetMetadata().GetSeason()
+			}
+
+			//episode
+			if baseOptimus.GetMetadata().GetEpisode() == 0 {
+				baseOptimus.GetMetadata().Episode = targetOptimus.GetMetadata().GetEpisode()
+			}
+
+			//Part
+			if baseOptimus.GetMetadata().GetPart() == 0 {
+				baseOptimus.GetMetadata().Part = targetOptimus.GetMetadata().GetPart()
+			}
+
+			//mood TODO check the login of it in future. Subjected to change **************************
+			if len(baseOptimus.GetMetadata().GetMood()) > 0 {
+				baseOptimus.GetMetadata().Mood = targetOptimus.GetMetadata().Mood
+			}
+			ts, _ := ptypes.TimestampProto(time.Now())
+			baseOptimus.UpdatedAt = ts
+
+
+			_, err = baseContent.ReplaceOne(ctx, bson.D{{"refid", baseOptimus.GetRefId()}}, baseOptimus)
+			if err != nil {
+				return err
+			}
+
+			// making monetize
+
+			// case 1 if the content is not present
+			montizeFilter := bson.D{{"refid", baseOptimus.GetRefId()}}
+
+			findOneResult := baseMonetize.FindOne(ctx, montizeFilter)
+			if findOneResult.Err() != nil {
+				if findOneResult.Err() == mongo.ErrNoDocuments {
+					log.Fatal("+++++++++++++++++++++++    Worng Logic ")
+				}else {
+					return findOneResult.Err()
+				}
+			}else {
+				var play pb.Play
+				err = findOneResult.Decode(&play)
+				if err != nil {
+					return err
+				}
+				for _, v := range play.ContentAvailable {
+					if v.Source != contentAvlb.Source {
+						play.ContentAvailable = append(play.ContentAvailable, contentAvlb)
+						_ , err = baseMonetize.ReplaceOne(ctx, montizeFilter, play)
+						if err != nil {
+							return err
+						}
+						break
+					}
+				}
+			}
+		}
+		if noDocCounter == 0 {
+			log.Println("intserting new content ", targetOptimus.GetMetadata().GetTitle())
+			// found new coentent so interest it blindly
+			_, err := baseContent.InsertOne(ctx, targetOptimus)
+			if err != nil {
+				return err
+			}
+			_, err = baseMonetize.InsertOne(ctx, pb.Play{
+				ContentAvailable:     []*pb.ContentAvaliable{contentAvlb},
+				RefId:                targetOptimus.RefId,
+			})
 			if err != nil {
 				return err
 			}
 			return nil
 		}
-	}else {
-		//TODO case 2 if the content is already Present
-		var baseOptimus *pb.Optimus
-		err := result.Decode(baseOptimus)
-		if err != nil {
-			return err
-		}
-
-		// starting with media comparsion
-
-		// ladscape
-		if len(baseOptimus.GetMedia().GetLandscape()) > 0 {
-			for _, v := range targetOptimus.GetMedia().GetLandscape() {
-				// check if already present, if not add
-				for _, j := range baseOptimus.GetMedia().GetLandscape() {
-					if v == j {
-						break
-					}else {
-						baseOptimus.GetMedia().Landscape = append(baseOptimus.GetMedia().Landscape , v)
-					}
-				}
-			}
-		}else {
-			baseOptimus.GetMedia().Landscape = targetOptimus.GetMedia().GetLandscape()
-		}
-
-
-		// portrait
-		if len(baseOptimus.GetMedia().GetPortrait()) > 0 {
-			for _, v := range targetOptimus.GetMedia().GetPortrait() {
-				// check if already present, if not add
-				for _, j := range baseOptimus.GetMedia().GetPortrait() {
-					if v == j {
-						break
-					}else {
-						baseOptimus.GetMedia().Portrait = append(baseOptimus.GetMedia().Portrait , v)
-					}
-				}
-			}
-		}else {
-			baseOptimus.GetMedia().Portrait = targetOptimus.GetMedia().GetPortrait()
-		}
-
-
-		// backdrop
-		if len(baseOptimus.GetMedia().GetBackdrop()) > 0 {
-			for _, v := range targetOptimus.GetMedia().GetBackdrop() {
-				// check if already present, if not add
-				for _, j := range baseOptimus.GetMedia().GetBackdrop() {
-					if v == j {
-						break
-					}else {
-						baseOptimus.GetMedia().Backdrop = append(baseOptimus.GetMedia().Backdrop , v)
-					}
-				}
-			}
-		}else {
-			baseOptimus.GetMedia().Backdrop = targetOptimus.GetMedia().GetBackdrop()
-		}
-
-
-		//banner
-		if len(baseOptimus.GetMedia().GetBanner()) > 0 {
-			for _, v := range targetOptimus.GetMedia().GetBanner() {
-				// check if already present, if not add
-				for _, j := range baseOptimus.GetMedia().GetBanner() {
-					if v == j {
-						break
-					}else {
-						baseOptimus.GetMedia().Banner = append(baseOptimus.GetMedia().Banner , v)
-					}
-				}
-			}
-		}else {
-			baseOptimus.GetMedia().Banner = targetOptimus.GetMedia().GetBanner()
-		}
-
-		//Video
-		if len(baseOptimus.GetMedia().GetVideo()) > 0 {
-			for _, v := range targetOptimus.GetMedia().GetVideo() {
-				// check if already present, if not add
-				for _, j := range baseOptimus.GetMedia().GetVideo() {
-					if v == j {
-						break
-					}else {
-						baseOptimus.GetMedia().Video = append(baseOptimus.GetMedia().Video , v)
-					}
-				}
-			}
-		}else {
-			baseOptimus.GetMedia().Video = targetOptimus.GetMedia().GetVideo()
-		}
-
-
-
-		// set the Tile type if the video url is avaliable
-		if len(baseOptimus.GetMedia().GetVideo()) > 0 {
-			baseOptimus.TileType = pb.TileType_VideoTile
-		}
-
-		// content Part
-		for _, v := range targetOptimus.GetContent().GetSources() {
-			for _, j := range baseOptimus.GetContent().GetSources() {
-				if v == j {
-					break
-				}else {
-					baseOptimus.GetContent().Sources = append(baseOptimus.GetContent().Sources, v)
-				}
-			}
-		}
-
-
-
-
-		// metadata part
-
-		// imdb
-		if targetOptimus.GetMetadata().GetImdbId() != "" {
-			baseOptimus.GetMetadata().ImdbId = targetOptimus.GetMetadata().GetImdbId()
-		}
-
-		//sysnopsis
-		if targetOptimus.GetMetadata().GetSynopsis() != "" {
-			baseOptimus.GetMetadata().Synopsis = targetOptimus.GetMetadata().GetSynopsis()
-		}
-
-		//Country
-		if len(targetOptimus.GetMetadata().GetCountry()) > 0 {
-			for _, v := range targetOptimus.GetMetadata().GetCountry() {
-				for _, j := range baseOptimus.GetMetadata().GetCountry() {
-					if v == j {
-						break
-					}else {
-						baseOptimus.GetMetadata().Country  = append(baseOptimus.GetMetadata().Country, v)
-					}
-				}
-			}
-		}
-
-
-		//runtime
-		if targetOptimus.GetMetadata().GetRuntime() != "" {
-			baseOptimus.GetMetadata().Runtime = targetOptimus.GetMetadata().GetRuntime()
-		}
-
-		//rating
-		if targetOptimus.GetMetadata().GetRating() != 0.0 {
-			baseOptimus.GetMetadata().Rating = targetOptimus.GetMetadata().GetRating()
-		}
-
-		//releaseDate
-		if targetOptimus.GetMetadata().GetReleaseDate() != "" {
-			baseOptimus.GetMetadata().ReleaseDate = targetOptimus.GetMetadata().GetReleaseDate()
-		}
-
-		//Tags
-		if len(targetOptimus.GetMetadata().GetTags()) > 0 {
-			for _, v := range targetOptimus.GetMetadata().GetTags() {
-				for _, j := range baseOptimus.GetMetadata().GetTags() {
-					if v == j {
-						break
-					}else {
-						baseOptimus.GetMetadata().Tags  = append(baseOptimus.GetMetadata().Tags, v)
-					}
-				}
-			}
-		}
-
-
-		//Year
-		if targetOptimus.GetMetadata().GetYear() != 0 && baseOptimus.GetMetadata().GetYear() == 0 {
-			baseOptimus.GetMetadata().Year = targetOptimus.GetMetadata().Year
-		}
-
-
-		//cast
-		if len(targetOptimus.GetMetadata().GetCast()) > 0 {
-			for _, v := range targetOptimus.GetMetadata().GetCast() {
-				for _, j := range baseOptimus.GetMetadata().GetCast() {
-					if v == j {
-						break
-					}else {
-						baseOptimus.GetMetadata().Cast  = append(baseOptimus.GetMetadata().Cast, v)
-					}
-				}
-			}
-		}
-
-		//director
-		if len(targetOptimus.GetMetadata().GetDirectors()) > 0 {
-			for _, v := range targetOptimus.GetMetadata().GetDirectors() {
-				for _, j := range baseOptimus.GetMetadata().GetDirectors() {
-					if v == j {
-						break
-					}else {
-						baseOptimus.GetMetadata().Directors  = append(baseOptimus.GetMetadata().Directors, v)
-					}
-				}
-			}
-		}
-
-
-		//genre
-		if len(targetOptimus.GetMetadata().GetGenre()) > 0 {
-			for _, v := range targetOptimus.GetMetadata().GetGenre() {
-				for _, j := range baseOptimus.GetMetadata().GetGenre() {
-					if v == j {
-						break
-					}else {
-						baseOptimus.GetMetadata().Genre  = append(baseOptimus.GetMetadata().Genre, v)
-					}
-				}
-			}
-		}
-
-		// categories
-		if len(targetOptimus.GetMetadata().GetCategories()) > 0 {
-			for _, v := range targetOptimus.GetMetadata().GetCategories() {
-				for _, j := range baseOptimus.GetMetadata().GetCategories() {
-					if v == j {
-						break
-					}else {
-						baseOptimus.GetMetadata().Categories  = append(baseOptimus.GetMetadata().Categories, v)
-					}
-				}
-			}
-		}
-
-		// languages
-		if len(targetOptimus.GetMetadata().GetLanguages()) > 0 {
-			for _, v := range targetOptimus.GetMetadata().GetLanguages() {
-				for _, j := range baseOptimus.GetMetadata().GetLanguages() {
-					if v == j {
-						break
-					}else {
-						baseOptimus.GetMetadata().Languages  = append(baseOptimus.GetMetadata().Languages, v)
-					}
-				}
-			}
-		}
-
-		//kidsSafe
-		baseOptimus.GetMetadata().KidsSafe = targetOptimus.GetMetadata().KidsSafe
-
-		//viewCount TODO alag game hai iska Please keep a not of it. ****************************************
-		if baseOptimus.GetMetadata().ViewCount == 0.0 {
-			baseOptimus.GetMetadata().ViewCount = targetOptimus.GetMetadata().ViewCount
-		}
-
-
-		//season
-		if baseOptimus.GetMetadata().GetSeason() == 0 {
-			baseOptimus.GetMetadata().Season = targetOptimus.GetMetadata().GetSeason()
-		}
-
-		//episode
-		if baseOptimus.GetMetadata().GetEpisode() == 0 {
-			baseOptimus.GetMetadata().Episode = targetOptimus.GetMetadata().GetEpisode()
-		}
-
-		//Part
-		if baseOptimus.GetMetadata().GetPart() == 0 {
-			baseOptimus.GetMetadata().Part = targetOptimus.GetMetadata().GetPart()
-		}
-
-		//mood TODO check the login of it in future. Subjected to change **************************
-		if len(baseOptimus.GetMetadata().GetMood()) > 0 {
-			baseOptimus.GetMetadata().Mood = targetOptimus.GetMetadata().Mood
-		}
-		ts, _ := ptypes.TimestampProto(time.Now())
-		baseOptimus.UpdatedAt = ts
-		_, err = baseContent.ReplaceOne(ctx, queryFilter, baseOptimus)
-		if err != nil {
-			return err
-		}
-
-
-		// making monetize
-
-
-		// case 1 if the content is not present
-		//montizeFilter = bson.D{{""}}
-
 	}
 
 	return nil
 }
-
-
 
 func GenerateRandomBytes(n int) ([]byte, error) {
 	b := make([]byte, n)
@@ -1352,22 +1730,6 @@ func GenerateRandomBytes(n int) ([]byte, error) {
 	}
 	return b, nil
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

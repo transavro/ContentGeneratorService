@@ -44,7 +44,7 @@ var nativeTile *mongo.Collection
 // Multiple init() function
 func init() {
 	fmt.Println("Welcome to init() function")
-	optimusDB = getMongoCollection("optimus", "test_content", developmentMongoHost)
+	optimusDB = getMongoCollection("transavro", "test_content", developmentMongoHost)
 	nativeTile = getMongoCollection("cwtx2devel", "tiles", developmentMongoHost).Collection("tiles")
 }
 
@@ -105,14 +105,13 @@ func startGRPCServer(address string) error {
 	} // create a server instance
 	s := apihandler.Server{
 		optimusDB,
-					nativeTile,
+		nativeTile,
 	}
 
 	//serverOptions := []grpc.ServerOption{grpc.UnaryInterceptor(unaryInterceptor), grpc.StreamInterceptor(streamIntercept)}
 
 	//attach the Ping service to the server
 	grpcServer := grpc.NewServer()
-
 
 	// attach the Ping service to the server
 	pb.RegisterContentGeneratorServiceServer(grpcServer, &s)
@@ -154,6 +153,7 @@ func getMongoCollection(dbName, collectionName, mongoHost string) *mongo.Databas
 	}
 	return mongoClient.Database(dbName)
 }
+
 
 
 func main() {

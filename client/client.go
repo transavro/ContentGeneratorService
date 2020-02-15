@@ -19,7 +19,7 @@ func main() {
 
 	client := pb.NewContentGeneratorServiceClient(conn)
 
-	resp , err := client.FetchNativeData(context.Background(), &pb.Request{})
+	resp , err := client.MergingOptimus(context.Background(), &pb.Request{})
 
 	if err != nil {
 		log.Fatal(err)
