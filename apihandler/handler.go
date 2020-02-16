@@ -1290,16 +1290,16 @@ func (s *Server) MergingOptimus(request *pb.Request, stream pb.ContentGeneratorS
 func (s *Server) MergingParty() error {
 
 	//merging altbalaji content
-	//hungamaContent := s.OptimusDB.Collection("test_altbalaji_content")
-	//hungamaMonetize := s.OptimusDB.Collection("test_altbalaji_monetize")
+	hungamaContent := s.OptimusDB.Collection("test_altbalaji_content")
+	hungamaMonetize := s.OptimusDB.Collection("test_altbalaji_monetize")
 
 	//merging schemaroo content
 	//hungamaContent := s.OptimusDB.Collection("test_schemaroo_content")
 	//hungamaMonetize := s.OptimusDB.Collection("test_schemaroo_monetize")
 
 	//merging native content
-	hungamaContent := s.OptimusDB.Collection("test_native_content")
-	hungamaMonetize := s.OptimusDB.Collection("test_native_monetize")
+	//hungamaContent := s.OptimusDB.Collection("test_native_content")
+	//hungamaMonetize := s.OptimusDB.Collection("test_native_monetize")
 
 	//merging hungama content
 	//hungamaContent := s.OptimusDB.Collection("test_hungama_content")
@@ -1332,8 +1332,13 @@ func (s *Server) MergingParty() error {
 			return err
 		}
 	}
+
+	log.Println("MERging content count ==================================>     ",contentFoundCount)
+	cur.Close(context.Background())
 	return nil
 }
+
+var contentFoundCount = 0;
 
 func (s *Server) MergingLogic(targetOptimus pb.Optimus, play pb.Play, ctx context.Context) error {
 
@@ -1379,14 +1384,13 @@ func (s *Server) MergingLogic(targetOptimus pb.Optimus, play pb.Play, ctx contex
 		var noDocCounter = 0
 		for result.Next(ctx){
 			noDocCounter++
-
-			log.Println("content founded     ")
 			//TODO case 2 if the content is already Present
 			var baseOptimus *pb.Optimus
 			err := result.Decode(&baseOptimus)
 			if err != nil {
 				return err
 			}
+			contentFoundCount ++
 			log.Println("content Found *************  "+ baseOptimus.GetRefId())
 			// starting with media comparsion
 
@@ -1701,8 +1705,7 @@ func (s *Server) MergingLogic(targetOptimus pb.Optimus, play pb.Play, ctx contex
 			}
 		}
 		if noDocCounter == 0 {
-			log.Println("intserting new content ", targetOptimus.GetMetadata().GetTitle())
-			// found new coentent so interest it blindly
+			// found new content so inserting it blindly
 			_, err := baseContent.InsertOne(ctx, targetOptimus)
 			if err != nil {
 				return err
