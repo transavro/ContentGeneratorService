@@ -131,7 +131,6 @@ type SchemarooData struct {
 	} `json:"data,omitempty,omitempty"`
 }
 
-
 //AltBalaji
 type AltBalaji struct {
 	Message   string `json:"message,omitempty"`
@@ -178,12 +177,10 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 		var optimus pb.Optimus
 		var play pb.Play
 
-
 		err = cur.Decode(&prime)
 		if err != nil {
 			return err
 		}
-
 
 		for k1, v1 := range prime.Map() {
 
@@ -191,7 +188,7 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 				if av, ok := v1.(string); ok && av != "" {
 					ref_id = av
 				}
-			}else if k1 == "posters" {
+			} else if k1 == "posters" {
 				//making media
 				for k2, v2 := range v1.(primitive.D).Map() {
 
@@ -204,7 +201,7 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 								}
 								media.Landscape = append(media.Landscape, fmt.Sprint(value))
 							}
-						}else {
+						} else {
 							media.Landscape = []string{}
 						}
 					} else if k2 == "portrait" {
@@ -216,7 +213,7 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 								}
 								media.Portrait = append(media.Portrait, fmt.Sprint(value))
 							}
-						}else {
+						} else {
 							media.Portrait = []string{}
 						}
 					} else if k2 == "banner" {
@@ -228,7 +225,7 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 								}
 								media.Banner = append(media.Banner, fmt.Sprint(value))
 							}
-						}else {
+						} else {
 							media.Banner = []string{}
 						}
 					} else if k2 == "backdrop" {
@@ -240,12 +237,12 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 								}
 								media.Backdrop = append(media.Backdrop, fmt.Sprint(value))
 							}
-						}else {
+						} else {
 							media.Backdrop = []string{}
 						}
 					}
 				}
-			}else if k1 == "content" {
+			} else if k1 == "content" {
 				// making content
 				for k3, v3 := range v1.(primitive.D).Map() {
 					if k3 == "source" {
@@ -263,22 +260,22 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 						if av, ok := v3.(bool); ok {
 							content.DetailPage = av
 						}
-					}else if k3 == "package" {
+					} else if k3 == "package" {
 						if av, ok := v3.(string); ok && av != "" {
 							contentAvlb.Package = av
 						}
-					}else if k3 == "type" {
+					} else if k3 == "type" {
 						if av, ok := v3.(string); ok && av != "" {
 							if av == "START" || av == "Start" || av == "start" {
 								contentAvlb.Type = "CW_THIRDPARTY"
-							}else {
+							} else {
 								contentAvlb.Type = av
 							}
-						}else {
+						} else {
 							contentAvlb.Type = "CW_THIRDPARTY"
 						}
-					}else if k3 == "target" {
-						contentAvlb.Target  = ""
+					} else if k3 == "target" {
+						contentAvlb.Target = ""
 						if av, ok := v3.(primitive.A); ok && len(av) > 0 {
 							for _, value := range av {
 								if value == "N/A" || value == "n/a" || value == "null" || value == "" || value == "Null" {
@@ -289,7 +286,7 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 						}
 					}
 				}
-			}else if k1 == "metadata" {
+			} else if k1 == "metadata" {
 				// making metadata
 				for k4, v4 := range v1.(primitive.D).Map() {
 					if k4 == "title" {
@@ -305,7 +302,7 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 								}
 								metadata.Tags = append(metadata.Tags, fmt.Sprint(value))
 							}
-						}else {
+						} else {
 							metadata.Tags = []string{}
 						}
 					} else if k4 == "releaseDate" {
@@ -333,15 +330,15 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 								}
 								metadata.Country = append(metadata.Country, strings.TrimSpace(strings.ToUpper(fmt.Sprint(value))))
 							}
-						}else {
+						} else {
 							metadata.Country = []string{}
 						}
 					} else if k4 == "rating" {
 						if av, ok := v4.(int); ok && av != 0 {
 							metadata.Rating = float64(av)
-						}else if av, ok := v4.(int32); ok && av != 0 {
+						} else if av, ok := v4.(int32); ok && av != 0 {
 							metadata.Rating = float64(av)
-						}else if av, ok := v4.(int64); ok && av != 0 {
+						} else if av, ok := v4.(int64); ok && av != 0 {
 							metadata.Rating = float64(av)
 						} else if av, ok := v4.(float64); ok && av != 0 {
 							metadata.Rating = av
@@ -359,7 +356,7 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 								}
 								metadata.Cast = append(metadata.Cast, strings.TrimSpace(fmt.Sprint(value)))
 							}
-						}else {
+						} else {
 							metadata.Cast = []string{}
 						}
 					} else if k4 == "directors" {
@@ -371,7 +368,7 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 								}
 								metadata.Directors = append(metadata.Directors, strings.TrimSpace(fmt.Sprint(value)))
 							}
-						}else {
+						} else {
 							metadata.Directors = []string{}
 						}
 					} else if k4 == "genre" {
@@ -383,7 +380,7 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 								}
 								metadata.Genre = append(metadata.Genre, strings.TrimSpace(fmt.Sprint(value)))
 							}
-						}else {
+						} else {
 							metadata.Genre = []string{}
 						}
 					} else if k4 == "categories" {
@@ -398,16 +395,16 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 								categories := strings.TrimSpace(fmt.Sprint(value))
 								if categories == "Series" || categories == "Series with Seasons" {
 									metadata.Categories = append(metadata.Categories, "TV series")
-								}else if categories == "Kids Rhymes" {
+								} else if categories == "Kids Rhymes" {
 									metadata.Categories = append(metadata.Categories, "Kids-Rhymes")
-								}else if categories == "Kid Movies" {
+								} else if categories == "Kid Movies" {
 									metadata.Categories = append(metadata.Categories, "Kids-Movies")
-								}else {
+								} else {
 									metadata.Categories = append(metadata.Categories, strings.TrimSpace(fmt.Sprint(value)))
 								}
 
 							}
-						}else {
+						} else {
 							metadata.Categories = []string{}
 						}
 					} else if k4 == "languages" {
@@ -419,13 +416,13 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 								}
 								metadata.Languages = append(metadata.Languages, strings.TrimSpace(fmt.Sprint(value)))
 							}
-						}else {
+						} else {
 							metadata.Languages = []string{}
 						}
 					} else if k4 == "year" {
 						if av, ok := v4.(int); ok && av != 0 {
 							metadata.Year = int32(av)
-						}else if av, ok := v4.(int32); ok && av != 0 {
+						} else if av, ok := v4.(int32); ok && av != 0 {
 							metadata.Year = av
 						} else if av, ok := v4.(int64); ok && av != 0 {
 							metadata.Year = int32(av)
@@ -439,7 +436,7 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 					} else if k4 == "season" {
 						if av, ok := v4.(int); ok && av != 0 {
 							metadata.Season = int32(av)
-						}else if av, ok := v4.(int32); ok && av != 0 {
+						} else if av, ok := v4.(int32); ok && av != 0 {
 							metadata.Season = av
 						} else if av, ok := v4.(int64); ok && av != 0 {
 							metadata.Season = int32(av)
@@ -450,10 +447,10 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 						} else {
 							metadata.Season = 0
 						}
-					}  else if k4 == "part" {
+					} else if k4 == "part" {
 						if av, ok := v4.(int); ok && av != 0 {
 							metadata.Part = int32(av)
-						}else if av, ok := v4.(int32); ok && av != 0 {
+						} else if av, ok := v4.(int32); ok && av != 0 {
 							metadata.Part = av
 						} else if av, ok := v4.(int64); ok && av != 0 {
 							metadata.Part = int32(av)
@@ -467,7 +464,7 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 					} else if k4 == "episode" {
 						if av, ok := v4.(int); ok && av != 0 {
 							metadata.Episode = int32(av)
-						}else if av, ok := v4.(int32); ok && av != 0 {
+						} else if av, ok := v4.(int32); ok && av != 0 {
 							metadata.Episode = av
 						} else if av, ok := v4.(int64); ok && av != 0 {
 							metadata.Episode = int32(av)
@@ -478,12 +475,12 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 						} else {
 							metadata.Episode = 0
 						}
-					}else if k4 == "viewCount" {
+					} else if k4 == "viewCount" {
 						if av, ok := v4.(int); ok && av != 0 {
 							metadata.ViewCount = float64(av)
-						}else if av, ok := v4.(int32); ok && av != 0 {
+						} else if av, ok := v4.(int32); ok && av != 0 {
 							metadata.ViewCount = float64(av)
-						}else if av, ok := v4.(int64); ok && av != 0 {
+						} else if av, ok := v4.(int64); ok && av != 0 {
 							metadata.ViewCount = float64(av)
 						} else if av, ok := v4.(float64); ok && av != 0 {
 							metadata.ViewCount = av
@@ -492,7 +489,7 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 						} else {
 							metadata.ViewCount = 0.0
 						}
-					}else if k4 == "kidsSafe" {
+					} else if k4 == "kidsSafe" {
 						if av, ok := v4.(bool); ok {
 							metadata.KidsSafe = av
 						}
@@ -506,20 +503,18 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 		contentAvlb.Monetize = -1
 		media.Video = []string{}
 		play = pb.Play{
-			ContentAvailable:     []*pb.ContentAvaliable{&contentAvlb},
-			RefId:                ref_id,
+			ContentAvailable: []*pb.ContentAvaliable{&contentAvlb},
+			RefId:            ref_id,
 		}
 
 		optimus = pb.Optimus{
-			Media:                &media,
-			RefId:                ref_id,
-			TileType:             pb.TileType_ImageTile,
-			Content:              &content,
-			Metadata:             &metadata,
-			CreatedAt:            ts,
+			Media:     &media,
+			RefId:     ref_id,
+			TileType:  pb.TileType_ImageTile,
+			Content:   &content,
+			Metadata:  &metadata,
+			CreatedAt: ts,
 		}
-
-
 
 		// check if already presnet
 		log.Println("Checking if already present ===>   ", optimus.GetMetadata().GetTitle())
@@ -551,7 +546,437 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 }
 
 func (s *Server) FetchJustWatch(request *pb.Request, stream pb.ContentGeneratorService_FetchJustWatchServer) error {
+
+	//provider map id
+	//jwProvidersArray := []string{"nfx", "hoo", "prv", "hst", "voo", "viu", "jio", "zee", "ern", "itu", "ply", "mbi", "snl", "yot", "gdc", "nfk", "tbv", "ytv", "snx", "cru", "hoc", "abj"}
+
+	jwProvidersMap := make(map[string]int)
+
+	jwProvidersMap["nfx"] = 8
+	jwProvidersMap["hoo"] = 125
+	jwProvidersMap["prv"] = 119
+	jwProvidersMap["hst"] = 122
+	jwProvidersMap["voo"] = 121
+	jwProvidersMap["viu"] = 158
+	jwProvidersMap["jio"] = 220
+	jwProvidersMap["zee"] = 232
+	jwProvidersMap["ern"] = 218
+	jwProvidersMap["itu"] = 2
+	jwProvidersMap["ply"] = 3
+	jwProvidersMap["mbi"] = 11
+	jwProvidersMap["snl"] = 237
+	jwProvidersMap["yot"] = 192
+	jwProvidersMap["gdc"] = 100
+	jwProvidersMap["nfk"] = 175
+	jwProvidersMap["tbv"] = 73
+	jwProvidersMap["ytv"] = 255
+	jwProvidersMap["snx"] = 309
+	jwProvidersMap["cru"] = 283
+	jwProvidersMap["hoc"] = 315
+	jwProvidersMap["abj"] = 319
+
+	// JW genre
+	jwGenre := make(map[string]string)
+	jwGenre["1"] = "Action & Adventure"
+	jwGenre["2"] = "Animation"
+	jwGenre["3"] = "Comedy"
+	jwGenre["4"] = "Crime"
+	jwGenre["5"] = "Documentary"
+	jwGenre["6"] = "Drama"
+	jwGenre["7"] = "Fantasy"
+	jwGenre["8"] = "History"
+	jwGenre["9"] = "Horror"
+	jwGenre["10"] = "Kids & Family"
+	jwGenre["11"] = "Music & Musical"
+	jwGenre["12"] = "Mystery & Thriller"
+	jwGenre["13"] = "Romance"
+	jwGenre["14"] = "Science-Fiction"
+	jwGenre["15"] = "Sport & Fitness"
+	jwGenre["16"] = "War & Military"
+	jwGenre["17"] = "Western"
+
+	//catrogories
+	jwCategories := []string{"movie", "shows"}
+
+	// monetize_type
+	//jwMonetizeType := []string{"free", "flatrate", "ads", "rent'", "buy", "5D"}
+
+	for _, categories := range jwCategories {
+		for pKey, pValue := range jwProvidersMap {
+			for _, genre := range jwGenre {
+
+				//values := map[string]interface{}{ "monetization_types": jwMonetizeType , "providers": []string{pKey}, "typeassign" : categories}
+				//jsonValue, _ := json.Marshal(values)
+				//resp, err := http.Post("http://affapi.hungama.com/v1/feeds/listing.json?", "application/json", bytes.NewBuffer(jsonValue))
+				//if err != nil {
+				//	return err
+				//}
+				//log.Println("response code ====>   ", resp.StatusCode)
+				//defer resp.Body.Close()
+				//body, err := ioutil.ReadAll(resp.Body)
+				//if err != nil {
+				//	return err
+				//}
+				//if resp.StatusCode != 200 {
+				//	log.Println("not got 200 response")
+				//	continue
+				//}
+				//// parsing json data
+				//var prime map[string]interface{}
+				//// unmarshaling byte[] to interface{}
+				//err = json.Unmarshal(body, &prime)
+				//if err != nil {
+				//	return err
+				//}
+
+				log.Println("cat ==>   ", categories, "  provider  ", pValue, "  ", pKey, "  genre ", genre)
+
+				req, err := http.NewRequest("GET", "https://apis.justwatch.com/content/titles/movie/2/locale/en_IN", nil)
+				if err != nil {
+					return err
+				}
+				client := &http.Client{}
+				resp, err := client.Do(req)
+				if err != nil {
+					return err
+				}
+
+				defer resp.Body.Close()
+				body, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					return err
+				}
+
+				if resp.StatusCode != 200 {
+					log.Println("not got 200 response")
+					continue
+				}
+
+				// parsing json data
+				var prime map[string]interface{}
+				// unmarshaling byte[] to interface{}
+				err = json.Unmarshal(body, &prime)
+				if err != nil {
+					return err
+				}
+
+				// making content
+				var content pb.Content
+				var contentAvlb pb.ContentAvaliable
+				var metadata pb.Metadata
+
+				content.DetailPage = false
+				content.PublishState = true
+
+				offers := prime["offers"].([]interface{})
+
+				contentAvlb.TargetId = strings.Split(fmt.Sprint(prime["poster"]), "/")[1]
+
+				for _, value := range offers {
+					for mk, mv := range value.(map[string]interface{}) {
+
+						if mk == "monetization_type" {
+							switch mv {
+							case "buy":
+							case "flatrate":
+								{
+									contentAvlb.Monetize = pb.Monetize_Paid
+								}
+							case "rent":
+								{
+									contentAvlb.Monetize = pb.Monetize_Rent
+								}
+							}
+						}else if mk == "provider_id" {
+							for makeKey, mapValue := range jwProvidersMap {
+								log.Println(mv ,"             ********************88     " , makeKey, "       ===========     ", mapValue)
+								if mv == mapValue {
+									log.Println("++++++++++++++++++++      ", GetSourceForJW(makeKey))
+									contentAvlb.Source = GetSourceForJW(makeKey)
+									content.Sources = append(content.Sources, contentAvlb.GetSource())
+									if contentAvlb.GetSource() == "Youtube" {
+										contentAvlb.Type = "CWYT_VIDEO"
+									}else {
+										contentAvlb.Type = "CW_THIRDPARTY"
+									}
+									break
+								}
+							}
+						}else if mk == "urls" {
+							for dk, dv := range mv.(map[string]interface{}){
+								if dk == "standard_web" {
+									contentAvlb.Target = fmt.Sprint(dv)
+									break
+								}
+							}
+						}else if mk == "audio_languages" {
+							for _, val := range mv.([]interface{}) {
+								if val == "en" {
+									metadata.Languages = append(metadata.Languages, "English")
+								}else if val == "hi" {
+									metadata.Languages = append(metadata.Languages, "Hindi")
+								}
+							}
+						}
+					}
+				}
+
+				// making media
+				var media pb.Media
+				clips := prime["clips"].([]interface{})
+
+				// video
+				for _, clip := range clips {
+					for mk, mv := range clip.(map[string]interface{}){
+						if mk == "external_id" {
+							media.Video = append(media.Video, fmt.Sprintf("https://www.youtube.com/watch?v=%s", mv))
+						}
+					}
+				}
+
+				//poster
+				portrait := strings.Replace(fmt.Sprint(prime["poster"]) , "{profile}", "s592/movie.webp" , -1)
+				media.Portrait = append(media.Portrait, fmt.Sprintf("https://images.justwatch.com%s", portrait))
+				log.Println(media.Portrait)
+
+				// backdrop , ladscape
+				for _, r := range prime["backdrops"].([]interface{}){
+					for mk, mv := range r.(map[string]interface{}){
+						if mk == "backdrop_url" {
+							nameOfTile := fmt.Sprint(prime["full_path"])
+							nameOfTile = strings.Replace(nameOfTile, "/in/movie", "", -1 )
+							nameOfTile = strings.Replace(nameOfTile, "/in/tv-show", "", -1 )
+							backdrop := strings.Replace(fmt.Sprint(mv) , "{profile}", "s1440"+nameOfTile+".webp" , -1)
+							media.Backdrop = append(media.Backdrop, fmt.Sprintf("https://images.justwatch.com%s", backdrop))
+							landscape := strings.Replace(fmt.Sprint(mv) , "{profile}", "s592"+nameOfTile+".webp" , -1)
+							media.Landscape = append(media.Landscape, fmt.Sprintf("https://images.justwatch.com%s", landscape))
+						}
+					}
+				}
+
+				//making metadata
+
+				metadata.Title = fmt.Sprint(prime["title"])
+				metadata.Synopsis = fmt.Sprint(prime["short_description"])
+				metadata.Runtime =  fmt.Sprint(prime["runtime"])
+
+				// genre
+				for _, genreId := range prime["genre_ids"].([]interface{}){
+					metadata.Genre = append(metadata.Genre, jwGenre[fmt.Sprint(genreId)])
+				}
+
+
+				// cast
+				for _, r := range prime["credits"].([]interface{}){
+					if r.(map[string]interface{})["role"] == "ACTOR" {
+						metadata.Cast = append(metadata.Cast, fmt.Sprint(r.(map[string]interface{})["name"]))
+					}else if r.(map[string]interface{})["role"] == "DIRECTOR" {
+						metadata.Directors = append(metadata.Directors, fmt.Sprint(r.(map[string]interface{})["name"]))
+					}
+				}
+
+				//categories
+				metadata.Categories = append(metadata.Categories,  categories)
+
+				// imdbid
+				for _, r := range prime["scoring"].([]interface{}){
+					if r.(map[string]interface{})["provider_type"] == "tomato_userrating:meter"{
+						metadata.Rating = r.(map[string]interface{})["value"].(float64)
+						break
+					}
+				}
+
+
+				for _, r := range prime["external_ids"].([]interface{}){
+					if r.(map[string]interface{})["provider"] == "imdb"{
+						metadata.ImdbId = fmt.Sprint(r.(map[string]interface{})["external_id"])
+						break
+					}
+				}
+
+				//Year
+				switch i := prime["original_release_year"].(type) {
+				case int:
+					{
+						metadata.Year = int32(i)
+					}
+				case float64:
+					{
+						metadata.Year = int32(i)
+					}
+				case int32:
+					{
+						metadata.Year = i
+					}
+				}
+
+
+
+				//kidsSafe
+				if genre == "Kids & Family" {
+					metadata.KidsSafe = true
+				}else {
+					metadata.KidsSafe = false
+				}
+
+				metadata.Country = []string{}
+
+
+				//relasedate
+				metadata.ReleaseDate = fmt.Sprintf("05-01-%d", metadata.GetYear())
+
+
+				//TAGs
+				metadata.Tags = append(metadata.Tags, metadata.GetGenre()...)
+				metadata.Tags = append(metadata.Tags, metadata.GetCategories()...)
+
+				//mood
+				metadata.Mood = []int32{}
+
+
+				//TODO converting hungama duration in our format.
+				bytesArray, _ := GenerateRandomBytes(32)
+				hasher := md5.New()
+				hasher.Write(bytesArray)
+				ref_id := hex.EncodeToString(hasher.Sum(nil))
+
+				ts, _ := ptypes.TimestampProto(time.Now())
+
+				var tileType = pb.TileType_ImageTile
+				if len(media.GetVideo()) > 0 {
+					tileType = pb.TileType_VideoTile
+				}
+
+				optimus := &pb.Optimus{Metadata: &metadata, RefId: ref_id, Content: &content, Media: &media, CreatedAt: ts, TileType: tileType}
+
+				// check if already presnet
+				log.Println("Checking if already present ===>   ", optimus.GetMetadata().GetTitle())
+				result := s.OptimusDB.Collection("test_justwatch_monetize").FindOne(context.Background(), bson.D{{"contentavailable.targetid", contentAvlb.GetTargetId()}})
+				if result.Err() != nil {
+					if result.Err() == mongo.ErrNoDocuments {
+						log.Println("Inserting..")
+						_, err = s.OptimusDB.Collection("test_justwatch_content").InsertOne(context.Background(), optimus)
+						if err != nil {
+							return err
+						}
+						_, err = s.OptimusDB.Collection("test_justwatch_monetize").InsertOne(context.Background(), pb.Play{
+							ContentAvailable: []*pb.ContentAvaliable{&contentAvlb},
+							RefId:            ref_id,
+						})
+						if err != nil {
+							return err
+						}
+						log.Println("sending data to client...")
+						stream.Send(optimus)
+					} else {
+						return result.Err()
+					}
+				} else {
+					log.Println("content already present", optimus.GetMetadata().GetTitle())
+				}
+
+				break
+			}
+		}
+	}
 	return nil
+}
+
+
+func GetSourceForJW(sourceCode interface{}) string {
+	sources := fmt.Sprint(sourceCode)
+	log.Println("888888888888888888888888888888    +++++++++++++++++++==     ", sources)
+	switch sources {
+	case "nxt":
+		{
+			return "Netflix"
+		}
+	case "hoo":
+		{
+			return "Hooq"
+		}
+	case "prv":
+		{
+			return "Amazon Prime Video"
+		}
+	case "hst":
+		{
+			return "Hotstar"
+		}
+	case "voo":
+		{
+			return "Voot"
+		}
+	case "viu":
+		{
+			return "viu"
+		}
+	case "jio":
+		{
+			return "JioCinema"
+		}
+	case "zee":
+		{
+			return "ZEE5"
+		}
+	case "ern":
+		{
+			return "Eros Now"
+		}
+	case "itu":
+		{
+			return "Apple Itunes"
+		}
+	case "ply":
+		{
+			return "Google Play"
+		}
+	case "mbi":
+		{
+			return "Mubi"
+		}
+	case "snl":
+		{
+			return "Sony LIV"
+		}
+	case "yot":
+		{
+			return "Youtube"
+		}
+	case "gdc":
+		{
+			return "Guidedoc"
+		}
+	case "nfk":
+		{
+			return "Netflix Kids"
+		}
+	case "tbv":
+		{
+			return "Tube TV"
+		}
+	case "ytv":
+		{
+			return "YuppTV"
+		}
+	case "snx":
+		{
+			return "Sun NXT"
+		}
+	case "cru":
+		{
+			return "Crunchyroll"
+		}
+	case "hoc":
+		{
+			return "Hoichoi"
+		}
+	case "abj":
+		{
+			return "ALTBalaji"
+		}
+	}
+	return ""
 }
 
 func (s *Server) FetchHungamaPlay(request *pb.Request, stream pb.ContentGeneratorService_FetchHungamaPlayServer) error {
@@ -763,12 +1188,12 @@ func (s *Server) FetchHungamaPlay(request *pb.Request, stream pb.ContentGenerato
 						if tile["type"] != nil && tile["type"] != "" {
 							tags := strings.Split(fmt.Sprint(tile["type"]), ",")
 							for _, tag := range tags {
-								if strings.TrimSpace(tag) == "Movie"{
-									metadata.Categories = append(metadata.Categories, "Movies" )
-								}else if strings.TrimSpace(tag) == "Short Films"{
-									metadata.Categories = append(metadata.Categories, "Short Film" )
-								}else {
-									metadata.Categories = append(metadata.Categories, strings.TrimSpace(tag) )
+								if strings.TrimSpace(tag) == "Movie" {
+									metadata.Categories = append(metadata.Categories, "Movies")
+								} else if strings.TrimSpace(tag) == "Short Films" {
+									metadata.Categories = append(metadata.Categories, "Short Film")
+								} else {
+									metadata.Categories = append(metadata.Categories, strings.TrimSpace(tag))
 								}
 
 							}
@@ -858,6 +1283,7 @@ func (s *Server) FetchHungamaPlay(request *pb.Request, stream pb.ContentGenerato
 
 						ts, _ := ptypes.TimestampProto(time.Now())
 						log.Println(ref_id)
+
 						optimus := &pb.Optimus{Metadata: &metadata, RefId: ref_id, Content: &content, Media: &media, CreatedAt: ts, TileType: pb.TileType_ImageTile}
 
 						// check if already presnet
@@ -969,11 +1395,11 @@ func (s *Server) FetchShemaroo(request *pb.Request, stream pb.ContentGeneratorSe
 
 				if item.CatalogObject.FriendlyID == "kids-movie" || item.CatalogObject.PlanCategoryType == "kids-movie" {
 					metadata.Categories = []string{"Kids-Movies"}
-				}else if   item.CatalogObject.FriendlyID == "kids-rhymes" || item.CatalogObject.PlanCategoryType == "kids-rhymes" {
+				} else if item.CatalogObject.FriendlyID == "kids-rhymes" || item.CatalogObject.PlanCategoryType == "kids-rhymes" {
 					metadata.Categories = []string{"Kids-Rhymes"}
-				} else if  item.CatalogObject.FriendlyID == "kids-shows" || item.CatalogObject.PlanCategoryType == "kids-shows" {
+				} else if item.CatalogObject.FriendlyID == "kids-shows" || item.CatalogObject.PlanCategoryType == "kids-shows" {
 					metadata.Categories = []string{"Kids-Shows"}
-				}else if  item.CatalogObject.FriendlyID == "bhakti" || item.CatalogObject.PlanCategoryType == "bhakti" {
+				} else if item.CatalogObject.FriendlyID == "bhakti" || item.CatalogObject.PlanCategoryType == "bhakti" {
 					metadata.Categories = []string{"Devotional Videos"}
 				} else {
 					metadata.Categories = []string{item.CatalogObject.FriendlyID}
@@ -1310,8 +1736,7 @@ func (s *Server) MergingParty() error {
 		return err
 	}
 
-
-	for cur.Next(context.Background()){
+	for cur.Next(context.Background()) {
 		var optimus pb.Optimus
 		var play pb.Play
 		err = cur.Decode(&optimus)
@@ -1333,12 +1758,12 @@ func (s *Server) MergingParty() error {
 		}
 	}
 
-	log.Println("MERging content count ==================================>     ",contentFoundCount)
+	log.Println("MERging content count ==================================>     ", contentFoundCount)
 	cur.Close(context.Background())
 	return nil
 }
 
-var contentFoundCount = 0;
+var contentFoundCount = 0
 
 func (s *Server) MergingLogic(targetOptimus pb.Optimus, play pb.Play, ctx context.Context) error {
 
@@ -1350,39 +1775,39 @@ func (s *Server) MergingLogic(targetOptimus pb.Optimus, play pb.Play, ctx contex
 	myStages := mongo.Pipeline{}
 
 	// first check on the bases of title
-	myStages = append(myStages, bson.D{{"$match",  bson.D{{"metadata.title",  targetOptimus.GetMetadata().GetTitle()}}}})
+	myStages = append(myStages, bson.D{{"$match", bson.D{{"metadata.title", targetOptimus.GetMetadata().GetTitle()}}}})
 
 	// then checking on the base of language
-	myStages = append(myStages,bson.D{{"$match",  bson.D{{"metadata.languages", bson.D{{"$in", targetOptimus.GetMetadata().GetLanguages()}}}}}})
+	myStages = append(myStages, bson.D{{"$match", bson.D{{"metadata.languages", bson.D{{"$in", targetOptimus.GetMetadata().GetLanguages()}}}}}})
 
 	//// then checking on the base of categories
-	myStages = append(myStages,bson.D{{"$match",  bson.D{{"metadata.categories", bson.D{{"$in", targetOptimus.GetMetadata().GetCategories()}}}}}})
+	myStages = append(myStages, bson.D{{"$match", bson.D{{"metadata.categories", bson.D{{"$in", targetOptimus.GetMetadata().GetCategories()}}}}}})
 
-	result , err := baseContent.Aggregate(ctx, myStages,)
+	result, err := baseContent.Aggregate(ctx, myStages, )
 
 	if err != nil || result.Err() != nil {
 		//TODO case 1 if the content is not Present
 		log.Println("got error ", err, result.Err())
-		if err == mongo.ErrNoDocuments ||  result.Err() == mongo.ErrNoDocuments {
+		if err == mongo.ErrNoDocuments || result.Err() == mongo.ErrNoDocuments {
 			// found new coentent so interest it blindly
 			_, err := baseContent.InsertOne(ctx, targetOptimus)
 			if err != nil {
 				return err
 			}
 			_, err = baseMonetize.InsertOne(ctx, pb.Play{
-				ContentAvailable:     []*pb.ContentAvaliable{contentAvlb},
-				RefId:                targetOptimus.RefId,
+				ContentAvailable: []*pb.ContentAvaliable{contentAvlb},
+				RefId:            targetOptimus.RefId,
 			})
 			if err != nil {
 				return err
 			}
 			return nil
-		}else {
+		} else {
 			return result.Err()
 		}
-	} else   {
+	} else {
 		var noDocCounter = 0
-		for result.Next(ctx){
+		for result.Next(ctx) {
 			noDocCounter++
 			//TODO case 2 if the content is already Present
 			var baseOptimus *pb.Optimus
@@ -1390,8 +1815,8 @@ func (s *Server) MergingLogic(targetOptimus pb.Optimus, play pb.Play, ctx contex
 			if err != nil {
 				return err
 			}
-			contentFoundCount ++
-			log.Println("content Found *************  "+ baseOptimus.GetRefId())
+			contentFoundCount++
+			log.Println("content Found *************  " + baseOptimus.GetRefId())
 			// starting with media comparsion
 
 			// ladscape
@@ -1526,7 +1951,6 @@ func (s *Server) MergingLogic(targetOptimus pb.Optimus, play pb.Play, ctx contex
 				}
 			}
 
-
 			//runtime
 			if targetOptimus.GetMetadata().GetRuntime() != "" {
 				baseOptimus.GetMetadata().Runtime = targetOptimus.GetMetadata().GetRuntime()
@@ -1556,7 +1980,6 @@ func (s *Server) MergingLogic(targetOptimus pb.Optimus, play pb.Play, ctx contex
 					}
 				}
 			}
-
 
 			//Year
 			if targetOptimus.GetMetadata().GetYear() != 0 && baseOptimus.GetMetadata().GetYear() == 0 {
@@ -1668,7 +2091,6 @@ func (s *Server) MergingLogic(targetOptimus pb.Optimus, play pb.Play, ctx contex
 			ts, _ := ptypes.TimestampProto(time.Now())
 			baseOptimus.UpdatedAt = ts
 
-
 			_, err = baseContent.ReplaceOne(ctx, bson.D{{"refid", baseOptimus.GetRefId()}}, baseOptimus)
 			if err != nil {
 				return err
@@ -1683,10 +2105,10 @@ func (s *Server) MergingLogic(targetOptimus pb.Optimus, play pb.Play, ctx contex
 			if findOneResult.Err() != nil {
 				if findOneResult.Err() == mongo.ErrNoDocuments {
 					log.Fatal("+++++++++++++++++++++++    Worng Logic ")
-				}else {
+				} else {
 					return findOneResult.Err()
 				}
-			}else {
+			} else {
 				var play pb.Play
 				err = findOneResult.Decode(&play)
 				if err != nil {
@@ -1695,7 +2117,7 @@ func (s *Server) MergingLogic(targetOptimus pb.Optimus, play pb.Play, ctx contex
 				for _, v := range play.ContentAvailable {
 					if v.Source != contentAvlb.Source {
 						play.ContentAvailable = append(play.ContentAvailable, contentAvlb)
-						_ , err = baseMonetize.ReplaceOne(ctx, montizeFilter, play)
+						_, err = baseMonetize.ReplaceOne(ctx, montizeFilter, play)
 						if err != nil {
 							return err
 						}
@@ -1711,8 +2133,8 @@ func (s *Server) MergingLogic(targetOptimus pb.Optimus, play pb.Play, ctx contex
 				return err
 			}
 			_, err = baseMonetize.InsertOne(ctx, pb.Play{
-				ContentAvailable:     []*pb.ContentAvaliable{contentAvlb},
-				RefId:                targetOptimus.RefId,
+				ContentAvailable: []*pb.ContentAvaliable{contentAvlb},
+				RefId:            targetOptimus.RefId,
 			})
 			if err != nil {
 				return err
@@ -1733,11 +2155,3 @@ func GenerateRandomBytes(n int) ([]byte, error) {
 	}
 	return b, nil
 }
-
-
-
-
-
-
-
-
