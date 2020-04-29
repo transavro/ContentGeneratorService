@@ -22,8 +22,8 @@ import (
 )
 
 const (
-	//atlasMongoHost          = "mongodb://nayan:tlwn722n@cluster0-shard-00-00-8aov2.mongodb.net:27017,cluster0-shard-00-01-8aov2.mongodb.net:27017,cluster0-shard-00-02-8aov2.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority"
-	developmentMongoHost = "mongodb://dev-uni.cloudwalker.tv:6592"
+	atlasMongoHost          = "mongodb://nayan:tlwn722n@cluster0-shard-00-00-8aov2.mongodb.net:27017,cluster0-shard-00-01-8aov2.mongodb.net:27017,cluster0-shard-00-02-8aov2.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority"
+	//developmentMongoHost = "mongodb://dev-uni.cloudwalker.tv:6592"
 	//developmentMongoHost = "mongodb://192.168.1.9:27017"
 	schedularRedisHost   = ":6379"
 	grpc_port        = ":7780"
@@ -44,8 +44,8 @@ var nativeTile *mongo.Collection
 // Multiple init() function
 func init() {
 	fmt.Println("Welcome to init() function")
-	optimusDB = getMongoCollection("transavro", "test_content", developmentMongoHost)
-	nativeTile = getMongoCollection("cwtx2devel", "tiles", developmentMongoHost).Collection("tiles")
+	optimusDB = getMongoCollection("transavro", "test_content", atlasMongoHost)
+	nativeTile = getMongoCollection("test", "cwmovies", atlasMongoHost).Collection("tiles")
 }
 
 func unaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
@@ -130,7 +130,14 @@ func startRESTServer(address, grpcAddress string) error {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	mux := runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(runtime.DefaultHeaderMatcher), runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{OrigName:false, EnumsAsInts:true, EmitDefaults:true}))
+
+	//mux := runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(runtime.DefaultHeaderMatcher),
+		//runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{OrigName:false, EnumsAsInts:true, EmitDefaults:true}))
+
+	mux := runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(runtime.DefaultHeaderMatcher),
+		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{EmitDefaults:true}))
+
+
 	opts := []grpc.DialOption{grpc.WithInsecure()} // Register ping
 
 	err := pb.RegisterContentGeneratorServiceHandlerFromEndpoint(ctx, mux, grpcAddress, opts)

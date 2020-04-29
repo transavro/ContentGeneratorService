@@ -5,7 +5,9 @@ package ContentGeneratorService;
 import   "google/api/annotations.proto";
 import   "google/protobuf/timestamp.proto";
 
+
 service ContentGeneratorService{
+
     rpc FetchNativeData(Request) returns (stream Optimus){
         option (google.api.http) = {
                 post:"/fetch/native"
@@ -51,6 +53,7 @@ service ContentGeneratorService{
 
 message Request{}
 
+
 enum Monetize {
     Free = 0;
     Paid = 1;
@@ -67,19 +70,19 @@ enum TileType {
 }
 
 message ContentAvaliable {
-     Monetize monetize = 6;
-     string targetId = 1;
-     string source = 2;
-     string package = 3;
-     string type = 4;
-     string target = 5;
+    Monetize monetize = 6;
+    string target_id = 1;
+    string source = 2;
+    string package = 3;
+    string type = 4;
+    string target = 5;
 }
+
 
 message Play {
-    repeated ContentAvaliable contentAvailable = 3;
-     string ref_id = 1;
+    repeated ContentAvaliable content_available = 3;
+    string ref_id = 1;
 }
-
 
 
 message Media {
@@ -91,19 +94,19 @@ message Media {
 }
 
 message Content {
-     bool publishState = 3;
-     bool detailPage = 1;
+    bool publish_state = 3;
+    bool detail_page = 1;
     repeated string sources = 2;
 }
 
 message Metadata {
     string title = 20;
-    string imdbId = 1;
+    string imdb_id = 1;
     string synopsis = 2;
     repeated string country = 3;
     string runtime = 4;
     double rating = 5;
-    string releaseDate = 6;
+    string release_date = 6;
     repeated string tags = 7;
     int32 year = 8;
     repeated string cast = 9;
@@ -111,49 +114,24 @@ message Metadata {
     repeated string genre = 11;
     repeated string categories = 12;
     repeated string languages = 13;
-    bool kidsSafe = 14;
-    double viewCount = 15;
+    bool kids_safe = 14;
+    double view_count = 15;
     int32 season = 16;
     int32 episode = 17;
     int32 part = 18;
     repeated int32 mood = 19;
 }
 
+
 message Optimus {
-     Media media = 6;
-     string ref_id = 1;
-     TileType tileType = 2;
-     Content content = 3;
-     Metadata metadata = 4;
-     google.protobuf.Timestamp createdAt = 7;
-     google.protobuf.Timestamp updatedAt = 8;
+    Media media = 6;
+    string ref_id = 1;
+    TileType tile_type = 2;
+    Content content = 3;
+    Metadata metadata = 4;
+    google.protobuf.Timestamp created_at = 7;
+    google.protobuf.Timestamp updated_at = 8;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

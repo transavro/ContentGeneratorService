@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/net/context"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -131,25 +132,6 @@ type SchemarooData struct {
 	} `json:"data,omitempty,omitempty"`
 }
 
-//AltBalaji
-type AltBalaji struct {
-	Message   string `json:"message,omitempty"`
-	Code      int    `json:"code,omitempty"`
-	Timestamp int64  `json:"timestamp,omitempty"`
-	Data      struct {
-		Title         string   `json:"title,omitempty"`
-		TitleType     string   `json:"titleType,omitempty"`
-		Description   string   `json:"description,omitempty"`
-		HrPosterURL   string   `json:"hrPosterURL,omitempty"`
-		VrPosterURL   string   `json:"vrPosterURL,omitempty"`
-		ReleaseDate   string   `json:"releaseDate,omitempty"`
-		Directors     []string `json:"directors,omitempty"`
-		Genres        []string `json:"genres,omitempty"`
-		PrincipalCast []string `json:"principalCast,omitempty"`
-		Deeplink      string   `json:"deeplink,omitempty"`
-	} `json:"data,omitempty"`
-}
-
 type Server struct {
 	OptimusDB  *mongo.Database
 	NativeTile *mongo.Collection
@@ -160,7 +142,7 @@ const (
 	nativeDateFormat  = "24 Sep 2009"
 )
 
-func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGeneratorService_FetchNativeDataServer) error {
+func (s *Server) FetchNativeData(_ *pb.Request, stream pb.ContentGeneratorService_FetchNativeDataServer) error {
 	log.Println("Hit NAtive")
 	cur, err := s.NativeTile.Find(stream.Context(), bson.D{{}})
 	if err != nil {
@@ -545,7 +527,7 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 	return cur.Close(stream.Context())
 }
 
-func (s *Server) FetchJustWatch(request *pb.Request, stream pb.ContentGeneratorService_FetchJustWatchServer) error {
+func (s *Server) FetchJustWatch(_ *pb.Request, stream pb.ContentGeneratorService_FetchJustWatchServer) error {
 
 	//provider map id
 	//jwProvidersArray := []string{"nfx", "hoo", "prv", "hst", "voo", "viu", "jio", "zee", "ern", "itu", "ply", "mbi", "snl", "yot", "gdc", "nfk", "tbv", "ytv", "snx", "cru", "hoc", "abj"}
@@ -641,7 +623,6 @@ func (s *Server) FetchJustWatch(request *pb.Request, stream pb.ContentGeneratorS
 					return err
 				}
 
-				defer resp.Body.Close()
 				body, err := ioutil.ReadAll(resp.Body)
 				if err != nil {
 					return err
@@ -655,8 +636,10 @@ func (s *Server) FetchJustWatch(request *pb.Request, stream pb.ContentGeneratorS
 				// parsing json data
 				var prime map[string]interface{}
 				// unmarshaling byte[] to interface{}
-				err = json.Unmarshal(body, &prime)
-				if err != nil {
+				if err = json.Unmarshal(body, &prime); err != nil {
+					return err
+				}
+				if err = resp.Body.Close(); err != nil {
 					return err
 				}
 
@@ -687,33 +670,33 @@ func (s *Server) FetchJustWatch(request *pb.Request, stream pb.ContentGeneratorS
 									contentAvlb.Monetize = pb.Monetize_Rent
 								}
 							}
-						}else if mk == "provider_id" {
+						} else if mk == "provider_id" {
 							for makeKey, mapValue := range jwProvidersMap {
-								log.Println(mv ,"             ********************88     " , makeKey, "       ===========     ", mapValue)
+								log.Println(mv, "             ********************88     ", makeKey, "       ===========     ", mapValue)
 								if mv == mapValue {
 									log.Println("++++++++++++++++++++      ", GetSourceForJW(makeKey))
 									contentAvlb.Source = GetSourceForJW(makeKey)
 									content.Sources = append(content.Sources, contentAvlb.GetSource())
 									if contentAvlb.GetSource() == "Youtube" {
 										contentAvlb.Type = "CWYT_VIDEO"
-									}else {
+									} else {
 										contentAvlb.Type = "CW_THIRDPARTY"
 									}
 									break
 								}
 							}
-						}else if mk == "urls" {
-							for dk, dv := range mv.(map[string]interface{}){
+						} else if mk == "urls" {
+							for dk, dv := range mv.(map[string]interface{}) {
 								if dk == "standard_web" {
 									contentAvlb.Target = fmt.Sprint(dv)
 									break
 								}
 							}
-						}else if mk == "audio_languages" {
+						} else if mk == "audio_languages" {
 							for _, val := range mv.([]interface{}) {
 								if val == "en" {
 									metadata.Languages = append(metadata.Languages, "English")
-								}else if val == "hi" {
+								} else if val == "hi" {
 									metadata.Languages = append(metadata.Languages, "Hindi")
 								}
 							}
@@ -727,7 +710,7 @@ func (s *Server) FetchJustWatch(request *pb.Request, stream pb.ContentGeneratorS
 
 				// video
 				for _, clip := range clips {
-					for mk, mv := range clip.(map[string]interface{}){
+					for mk, mv := range clip.(map[string]interface{}) {
 						if mk == "external_id" {
 							media.Video = append(media.Video, fmt.Sprintf("https://www.youtube.com/watch?v=%s", mv))
 						}
@@ -735,20 +718,20 @@ func (s *Server) FetchJustWatch(request *pb.Request, stream pb.ContentGeneratorS
 				}
 
 				//poster
-				portrait := strings.Replace(fmt.Sprint(prime["poster"]) , "{profile}", "s592/movie.webp" , -1)
+				portrait := strings.Replace(fmt.Sprint(prime["poster"]), "{profile}", "s592/movie.webp", -1)
 				media.Portrait = append(media.Portrait, fmt.Sprintf("https://images.justwatch.com%s", portrait))
 				log.Println(media.Portrait)
 
 				// backdrop , ladscape
-				for _, r := range prime["backdrops"].([]interface{}){
-					for mk, mv := range r.(map[string]interface{}){
+				for _, r := range prime["backdrops"].([]interface{}) {
+					for mk, mv := range r.(map[string]interface{}) {
 						if mk == "backdrop_url" {
 							nameOfTile := fmt.Sprint(prime["full_path"])
-							nameOfTile = strings.Replace(nameOfTile, "/in/movie", "", -1 )
-							nameOfTile = strings.Replace(nameOfTile, "/in/tv-show", "", -1 )
-							backdrop := strings.Replace(fmt.Sprint(mv) , "{profile}", "s1440"+nameOfTile+".webp" , -1)
+							nameOfTile = strings.Replace(nameOfTile, "/in/movie", "", -1)
+							nameOfTile = strings.Replace(nameOfTile, "/in/tv-show", "", -1)
+							backdrop := strings.Replace(fmt.Sprint(mv), "{profile}", "s1440"+nameOfTile+".webp", -1)
 							media.Backdrop = append(media.Backdrop, fmt.Sprintf("https://images.justwatch.com%s", backdrop))
-							landscape := strings.Replace(fmt.Sprint(mv) , "{profile}", "s592"+nameOfTile+".webp" , -1)
+							landscape := strings.Replace(fmt.Sprint(mv), "{profile}", "s592"+nameOfTile+".webp", -1)
 							media.Landscape = append(media.Landscape, fmt.Sprintf("https://images.justwatch.com%s", landscape))
 						}
 					}
@@ -758,37 +741,35 @@ func (s *Server) FetchJustWatch(request *pb.Request, stream pb.ContentGeneratorS
 
 				metadata.Title = fmt.Sprint(prime["title"])
 				metadata.Synopsis = fmt.Sprint(prime["short_description"])
-				metadata.Runtime =  fmt.Sprint(prime["runtime"])
+				metadata.Runtime = fmt.Sprint(prime["runtime"])
 
 				// genre
-				for _, genreId := range prime["genre_ids"].([]interface{}){
+				for _, genreId := range prime["genre_ids"].([]interface{}) {
 					metadata.Genre = append(metadata.Genre, jwGenre[fmt.Sprint(genreId)])
 				}
 
-
 				// cast
-				for _, r := range prime["credits"].([]interface{}){
+				for _, r := range prime["credits"].([]interface{}) {
 					if r.(map[string]interface{})["role"] == "ACTOR" {
 						metadata.Cast = append(metadata.Cast, fmt.Sprint(r.(map[string]interface{})["name"]))
-					}else if r.(map[string]interface{})["role"] == "DIRECTOR" {
+					} else if r.(map[string]interface{})["role"] == "DIRECTOR" {
 						metadata.Directors = append(metadata.Directors, fmt.Sprint(r.(map[string]interface{})["name"]))
 					}
 				}
 
 				//categories
-				metadata.Categories = append(metadata.Categories,  categories)
+				metadata.Categories = append(metadata.Categories, categories)
 
 				// imdbid
-				for _, r := range prime["scoring"].([]interface{}){
-					if r.(map[string]interface{})["provider_type"] == "tomato_userrating:meter"{
+				for _, r := range prime["scoring"].([]interface{}) {
+					if r.(map[string]interface{})["provider_type"] == "tomato_userrating:meter" {
 						metadata.Rating = r.(map[string]interface{})["value"].(float64)
 						break
 					}
 				}
 
-
-				for _, r := range prime["external_ids"].([]interface{}){
-					if r.(map[string]interface{})["provider"] == "imdb"{
+				for _, r := range prime["external_ids"].([]interface{}) {
+					if r.(map[string]interface{})["provider"] == "imdb" {
 						metadata.ImdbId = fmt.Sprint(r.(map[string]interface{})["external_id"])
 						break
 					}
@@ -810,21 +791,17 @@ func (s *Server) FetchJustWatch(request *pb.Request, stream pb.ContentGeneratorS
 					}
 				}
 
-
-
 				//kidsSafe
 				if genre == "Kids & Family" {
 					metadata.KidsSafe = true
-				}else {
+				} else {
 					metadata.KidsSafe = false
 				}
 
 				metadata.Country = []string{}
 
-
 				//relasedate
 				metadata.ReleaseDate = fmt.Sprintf("05-01-%d", metadata.GetYear())
-
 
 				//TAGs
 				metadata.Tags = append(metadata.Tags, metadata.GetGenre()...)
@@ -833,12 +810,11 @@ func (s *Server) FetchJustWatch(request *pb.Request, stream pb.ContentGeneratorS
 				//mood
 				metadata.Mood = []int32{}
 
-
 				//TODO converting hungama duration in our format.
 				bytesArray, _ := GenerateRandomBytes(32)
 				hasher := md5.New()
 				hasher.Write(bytesArray)
-				ref_id := hex.EncodeToString(hasher.Sum(nil))
+				refId := hex.EncodeToString(hasher.Sum(nil))
 
 				ts, _ := ptypes.TimestampProto(time.Now())
 
@@ -847,7 +823,7 @@ func (s *Server) FetchJustWatch(request *pb.Request, stream pb.ContentGeneratorS
 					tileType = pb.TileType_VideoTile
 				}
 
-				optimus := &pb.Optimus{Metadata: &metadata, RefId: ref_id, Content: &content, Media: &media, CreatedAt: ts, TileType: tileType}
+				optimus := &pb.Optimus{Metadata: &metadata, RefId: refId, Content: &content, Media: &media, CreatedAt: ts, TileType: tileType}
 
 				// check if already presnet
 				log.Println("Checking if already present ===>   ", optimus.GetMetadata().GetTitle())
@@ -861,13 +837,19 @@ func (s *Server) FetchJustWatch(request *pb.Request, stream pb.ContentGeneratorS
 						}
 						_, err = s.OptimusDB.Collection("test_justwatch_monetize").InsertOne(context.Background(), pb.Play{
 							ContentAvailable: []*pb.ContentAvaliable{&contentAvlb},
-							RefId:            ref_id,
+							RefId:            refId,
 						})
 						if err != nil {
 							return err
 						}
 						log.Println("sending data to client...")
-						stream.Send(optimus)
+						if err = stream.Send(optimus); err != nil {
+							if err == io.EOF {
+								continue
+							} else {
+								return err
+							}
+						}
 					} else {
 						return result.Err()
 					}
@@ -881,7 +863,6 @@ func (s *Server) FetchJustWatch(request *pb.Request, stream pb.ContentGeneratorS
 	}
 	return nil
 }
-
 
 func GetSourceForJW(sourceCode interface{}) string {
 	sources := fmt.Sprint(sourceCode)
@@ -979,7 +960,7 @@ func GetSourceForJW(sourceCode interface{}) string {
 	return ""
 }
 
-func (s *Server) FetchHungamaPlay(request *pb.Request, stream pb.ContentGeneratorService_FetchHungamaPlayServer) error {
+func (s *Server) FetchHungamaPlay(_ *pb.Request, stream pb.ContentGeneratorService_FetchHungamaPlayServer) error {
 	log.Print("Hit Hungama")
 	var hungamalanguage = [...]string{"hindi", "english", "telugu", "kannada", "tamil", "malayalam", "punjabi", "bengali", "bhojpuri", "gujarati", "marathi", "oriya", "rajasthani"}
 
@@ -1014,7 +995,6 @@ func (s *Server) FetchHungamaPlay(request *pb.Request, stream pb.ContentGenerato
 
 				log.Println("action ", action, "genre  ", genre, "lang  ", lang, "     ===>>>     ", resp.StatusCode)
 
-				defer resp.Body.Close()
 				body, err := ioutil.ReadAll(resp.Body)
 				if err != nil {
 					return err
@@ -1027,17 +1007,21 @@ func (s *Server) FetchHungamaPlay(request *pb.Request, stream pb.ContentGenerato
 
 				// parsing json data
 				var prime map[string]interface{}
-				// unmarshaling byte[] to interface{}
-				err = json.Unmarshal(body, &prime)
-				if err != nil {
+
+				if err = json.Unmarshal(body, &prime); err != nil {
 					return err
 				}
+
+				if err = resp.Body.Close(); err != nil {
+					return err
+				}
+
 				if prime["status_msg"] == "success" {
 					response := prime["response"].(map[string]interface{})
 					switch response["data"].(type) {
 					case string:
 						{
-							log.Println("got string ********============== >>>>   ")
+							log.Println("got string ********==============>>>>")
 							continue
 						}
 					}
@@ -1048,7 +1032,7 @@ func (s *Server) FetchHungamaPlay(request *pb.Request, stream pb.ContentGenerato
 						tile := v.(map[string]interface{})
 
 						// background images
-						resAry := []string{}
+						var resAry []string
 						mediaSet := tile["img"].(map[string]interface{})
 						if mediaSet["1024x768"] != nil && mediaSet["1024x768"] != "" {
 							if !strings.Contains(fmt.Sprint(mediaSet["1024x768"]), "http://stat") {
@@ -1279,12 +1263,12 @@ func (s *Server) FetchHungamaPlay(request *pb.Request, stream pb.ContentGenerato
 						bytesArray, _ := GenerateRandomBytes(32)
 						hasher := md5.New()
 						hasher.Write(bytesArray)
-						ref_id := hex.EncodeToString(hasher.Sum(nil))
+						refId := hex.EncodeToString(hasher.Sum(nil))
 
 						ts, _ := ptypes.TimestampProto(time.Now())
-						log.Println(ref_id)
+						log.Println(refId)
 
-						optimus := &pb.Optimus{Metadata: &metadata, RefId: ref_id, Content: &content, Media: &media, CreatedAt: ts, TileType: pb.TileType_ImageTile}
+						optimus := &pb.Optimus{Metadata: &metadata, RefId: refId, Content: &content, Media: &media, CreatedAt: ts, TileType: pb.TileType_ImageTile}
 
 						// check if already presnet
 						log.Println("Checking if already present ===>   ", optimus.GetMetadata().GetTitle())
@@ -1298,13 +1282,19 @@ func (s *Server) FetchHungamaPlay(request *pb.Request, stream pb.ContentGenerato
 								}
 								_, err = s.OptimusDB.Collection("test_hungama_monetize").InsertOne(context.Background(), pb.Play{
 									ContentAvailable: []*pb.ContentAvaliable{&contentAvlb},
-									RefId:            ref_id,
+									RefId:            refId,
 								})
 								if err != nil {
 									return err
 								}
 								log.Println("sending data to client...")
-								stream.Send(optimus)
+								if err = stream.Send(optimus); err != nil {
+									if err == io.EOF {
+										continue
+									} else {
+										return err
+									}
+								}
 							} else {
 								return result.Err()
 							}
@@ -1331,7 +1321,7 @@ func (s *Server) HungamaDeadLinkMaker(target, title, contentId string) string {
 	return fmt.Sprintf("http://www.hungama.com/%s/%s/%s", target, title, contentId)
 }
 
-func (s *Server) FetchShemaroo(request *pb.Request, stream pb.ContentGeneratorService_FetchShemarooServer) error {
+func (s *Server) FetchShemaroo(_ *pb.Request, stream pb.ContentGeneratorService_FetchShemarooServer) error {
 
 	req, err := http.NewRequest("GET", "https://prod.api.shemaroome.com/catalog_lists/cloudwalker-catalogs?", nil)
 	if err != nil {
@@ -1347,7 +1337,7 @@ func (s *Server) FetchShemaroo(request *pb.Request, stream pb.ContentGeneratorSe
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+
 	if resp.StatusCode == 200 {
 
 		body, err := ioutil.ReadAll(resp.Body)
@@ -1355,10 +1345,14 @@ func (s *Server) FetchShemaroo(request *pb.Request, stream pb.ContentGeneratorSe
 			return err
 		}
 		var prime SchemarooCatlog
-		err = json.Unmarshal(body, &prime)
-		if err != nil {
+		if err = json.Unmarshal(body, &prime); err != nil {
 			return err
 		}
+
+		if err = resp.Body.Close(); err != nil {
+			return err
+		}
+
 		for _, v := range prime.Data.CatalogListItems {
 			req, err := http.NewRequest("GET", fmt.Sprintf("https://prod.api.shemaroome.com/catalogs/%s/items?", v.FriendlyID), nil)
 			if err != nil {
@@ -1443,7 +1437,7 @@ func (s *Server) FetchShemaroo(request *pb.Request, stream pb.ContentGeneratorSe
 				}
 
 				if item.ItemCaption != "" {
-					var tag = []string{}
+					var tag []string
 					for _, v := range strings.Split(item.ItemCaption, "|") {
 						tag = append(tag, strings.TrimSpace(v))
 					}
@@ -1455,7 +1449,7 @@ func (s *Server) FetchShemaroo(request *pb.Request, stream pb.ContentGeneratorSe
 				// creating media
 				var media pb.Media
 				// bg
-				var resAry = []string{}
+				var resAry []string
 				if item.Thumbnails.XlImage11.URL != "" {
 					resAry = append(resAry, item.Thumbnails.XlImage11.URL)
 				}
@@ -1514,11 +1508,11 @@ func (s *Server) FetchShemaroo(request *pb.Request, stream pb.ContentGeneratorSe
 				bytesArray, _ := GenerateRandomBytes(32)
 				hasher := md5.New()
 				hasher.Write(bytesArray)
-				ref_id := hex.EncodeToString(hasher.Sum(nil))
+				refId := hex.EncodeToString(hasher.Sum(nil))
 				ts, _ := ptypes.TimestampProto(time.Now())
 				optimus := &pb.Optimus{
 					Media:     &media,
-					RefId:     ref_id,
+					RefId:     refId,
 					TileType:  pb.TileType_ImageTile,
 					Content:   &content,
 					Metadata:  &metadata,
@@ -1550,13 +1544,19 @@ func (s *Server) FetchShemaroo(request *pb.Request, stream pb.ContentGeneratorSe
 						}
 						_, err = s.OptimusDB.Collection("test_schemaroo_monetize").InsertOne(context.Background(), pb.Play{
 							ContentAvailable: []*pb.ContentAvaliable{&contentAvlb},
-							RefId:            ref_id,
+							RefId:            refId,
 						})
 						if err != nil {
 							return err
 						}
 						log.Println("sending data to client...")
-						stream.Send(optimus)
+						if err = stream.Send(optimus); err != nil {
+							if err == io.EOF {
+								continue
+							} else {
+								return err
+							}
+						}
 
 					} else {
 						return result.Err()
@@ -1570,7 +1570,7 @@ func (s *Server) FetchShemaroo(request *pb.Request, stream pb.ContentGeneratorSe
 	return nil
 }
 
-func (s *Server) FetchAltBalaji(request *pb.Request, stream pb.ContentGeneratorService_FetchAltBalajiServer) error {
+func (s *Server) FetchAltBalaji(_ *pb.Request, stream pb.ContentGeneratorService_FetchAltBalajiServer) error {
 	log.Print("Hit ALT BALAJI")
 	req, err := http.NewRequest("GET", "https://partners-catalog.cloud.altbalaji.com/v1/content/titleidlist?", nil)
 	if err != nil {
@@ -1585,17 +1585,21 @@ func (s *Server) FetchAltBalaji(request *pb.Request, stream pb.ContentGeneratorS
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
 
 	var prime map[string]interface{}
-	err = json.Unmarshal(body, &prime)
-	if err != nil {
+	if err = json.Unmarshal(body, &prime); err != nil {
 		return err
 	}
+
+	if err = resp.Body.Close(); err != nil {
+		return err
+	}
+
 	if prime["message"] == "success" {
 		response := prime["data"].(map[string]interface{})
 		data := response["titleIdList"]
@@ -1611,104 +1615,131 @@ func (s *Server) FetchAltBalaji(request *pb.Request, stream pb.ContentGeneratorS
 			if err1 != nil {
 				return err1
 			}
-			defer resp1.Body.Close()
 			body1, err1 := ioutil.ReadAll(resp1.Body)
 			if err1 != nil {
 				return err1
 			}
 
-			var altbaljivar *AltBalaji
-			err1 = json.Unmarshal(body1, &altbaljivar)
-			if err1 != nil {
+			var prime map[string]interface{}
+
+			if err1 = json.Unmarshal(body1, &prime); err1 != nil {
 				return err1
 			}
 
-			log.Println(altbaljivar.Data.Title, "   ================    ", fmt.Sprint(tileid["id"]))
-
-			//making metadata
-			var metadata pb.Metadata
-			metadata.Title = altbaljivar.Data.Title
-			metadata.Cast = altbaljivar.Data.PrincipalCast
-			metadata.Tags = []string{altbaljivar.Data.TitleType}
-			metadata.Directors = altbaljivar.Data.Directors
-			metadata.ReleaseDate = fmt.Sprintf("%s-%s-%s", "02", "01", altbaljivar.Data.ReleaseDate)
-			metadata.Synopsis = altbaljivar.Data.Description
-			metadata.Categories = []string{altbaljivar.Data.TitleType}
-			metadata.Languages = []string{}
-			metadata.Genre = altbaljivar.Data.Genres
-			metadata.Country = []string{"INDIA"}
-			metadata.Mood = []int32{}
-
-			//media
-			var media pb.Media
-			media.Landscape = []string{altbaljivar.Data.HrPosterURL}
-			media.Backdrop = []string{altbaljivar.Data.HrPosterURL}
-			media.Banner = []string{altbaljivar.Data.HrPosterURL}
-
-			media.Portrait = []string{altbaljivar.Data.VrPosterURL}
-			media.Video = []string{}
-
-			//conent
-			var content pb.Content
-			content.Sources = []string{"Alt Balaji"}
-			content.PublishState = true
-			content.DetailPage = true
-
-			bytesArray, _ := GenerateRandomBytes(32)
-			hasher := md5.New()
-			hasher.Write(bytesArray)
-			ref_id := hex.EncodeToString(hasher.Sum(nil))
-			ts, _ := ptypes.TimestampProto(time.Now())
-
-			optimus := &pb.Optimus{
-				Media:     &media,
-				RefId:     ref_id,
-				TileType:  pb.TileType_ImageTile,
-				Content:   &content,
-				Metadata:  &metadata,
-				CreatedAt: ts,
-				UpdatedAt: nil,
+			if err = resp1.Body.Close(); err != nil {
+				return err
 			}
 
-			// making montize
-			var contentAvlb pb.ContentAvaliable
-			contentAvlb.Monetize = -1
-			contentAvlb.Target = altbaljivar.Data.Deeplink
-			contentAvlb.Source = "Alt Balaji"
-			contentAvlb.TargetId = fmt.Sprint(tileid["id"])
-			contentAvlb.Package = "com.balaji.alt"
-			contentAvlb.Type = "CW_THIRDPARTY"
-
-			result := s.OptimusDB.Collection("test_altbalaji_monetize").FindOne(context.Background(), bson.D{{"contentavailable.targetid", contentAvlb.GetTargetId()}})
-			if result.Err() != nil {
-				if result.Err() == mongo.ErrNoDocuments {
-					log.Println("Inserting..")
-					_, err = s.OptimusDB.Collection("test_altbalaji_content").InsertOne(context.Background(), optimus)
-					if err != nil {
-						return err
-					}
-					_, err = s.OptimusDB.Collection("test_altbalaji_monetize").InsertOne(context.Background(), pb.Play{
-						ContentAvailable: []*pb.ContentAvaliable{&contentAvlb},
-						RefId:            ref_id,
-					})
-					if err != nil {
-						return err
-					}
-					log.Println("sending data to client...")
-					stream.Send(optimus)
-
-				} else {
-					return result.Err()
+			if prime["message"] == "success" {
+				data := prime["data"].(map[string]interface{})
+				//making metadata
+				var metadata pb.Metadata
+				metadata.Title = fmt.Sprint(data["title"])
+				for _, cast := range data["principalCast"].([]interface{}) {
+					metadata.Cast = append(metadata.Cast, fmt.Sprint(cast))
 				}
-			} else {
-				log.Println("content already present", optimus.GetMetadata().GetTitle())
+
+				metadata.Tags = []string{fmt.Sprint(data["titleType"])}
+				for _, director := range data["directors"].([]interface{}) {
+					metadata.Directors = append(metadata.Directors, fmt.Sprint(director))
+				}
+
+				metadata.ReleaseDate = fmt.Sprintf("%s-%s-%s", "02", "01", data["releaseDate"])
+
+				metadata.Synopsis = fmt.Sprint(data["description"])
+
+				metadata.Categories = []string{fmt.Sprint(data["titleType"])}
+
+				metadata.Languages = []string{}
+				for _, genre := range data["genres"].([]interface{}) {
+					metadata.Genre = append(metadata.Genre, fmt.Sprint(genre))
+				}
+				metadata.Country = []string{"INDIA"}
+				metadata.Mood = []int32{}
+
+				//media
+				var media pb.Media
+				media.Landscape = []string{fmt.Sprint(data["hrPosterURL"])}
+				media.Backdrop = []string{fmt.Sprint(data["hrPosterURL"])}
+				media.Banner = []string{fmt.Sprint(data["hrPosterURL"])}
+
+				media.Portrait = []string{fmt.Sprint(data["vrPosterURL"])}
+				media.Video = []string{}
+
+				//conent
+				var content pb.Content
+				content.Sources = []string{"Alt Balaji"}
+				content.PublishState = true
+				content.DetailPage = true
+
+				bytesArray, _ := GenerateRandomBytes(32)
+				hasher := md5.New()
+				hasher.Write(bytesArray)
+				refId := hex.EncodeToString(hasher.Sum(nil))
+				ts, _ := ptypes.TimestampProto(time.Now())
+
+				optimus := &pb.Optimus{
+					Media:     &media,
+					RefId:     refId,
+					TileType:  pb.TileType_ImageTile,
+					Content:   &content,
+					Metadata:  &metadata,
+					CreatedAt: ts,
+					UpdatedAt: nil,
+				}
+
+				// making montize
+				var contentAvlb pb.ContentAvaliable
+				contentAvlb.Monetize = -1
+				if data["link"] != nil {
+					contentAvlb.Target = fmt.Sprint(data["link"])
+				} else if data["deeplink"] != nil {
+					contentAvlb.Target = fmt.Sprint(data["deeplink"])
+				}
+				contentAvlb.Source = "Alt Balaji"
+				contentAvlb.TargetId = fmt.Sprint(tileid["id"])
+				contentAvlb.Package = "com.balaji.alt"
+				contentAvlb.Type = "CW_THIRDPARTY"
+
+				result := s.OptimusDB.Collection("test_altbalaji_monetize").FindOne(context.Background(), bson.D{{"contentavailable.targetid", contentAvlb.GetTargetId()}})
+				if result.Err() != nil {
+					if result.Err() == mongo.ErrNoDocuments {
+						log.Println("Inserting..")
+						_, err = s.OptimusDB.Collection("test_altbalaji_content").InsertOne(context.Background(), optimus)
+						if err != nil {
+							return err
+						}
+						_, err = s.OptimusDB.Collection("test_altbalaji_monetize").InsertOne(context.Background(), pb.Play{
+							ContentAvailable: []*pb.ContentAvaliable{&contentAvlb},
+							RefId:            refId,
+						})
+						if err != nil {
+							return err
+						}
+						log.Println("sending data to client...")
+
+						if err = stream.Send(optimus); err != nil {
+							if err == io.EOF {
+								continue
+							} else {
+								return err
+							}
+						}
+
+					} else {
+						return result.Err()
+					}
+				} else {
+					log.Println("content already present", optimus.GetMetadata().GetTitle())
+				}
+
 			}
 		}
 	}
 	return nil
 }
 
-func (s *Server) MergingOptimus(request *pb.Request, stream pb.ContentGeneratorService_MergingOptimusServer) error {
+func (s *Server) MergingOptimus(_ *pb.Request, _ pb.ContentGeneratorService_MergingOptimusServer) error {
 	log.Print("Hit MERGER")
 	return s.MergingParty()
 }
@@ -1759,8 +1790,7 @@ func (s *Server) MergingParty() error {
 	}
 
 	log.Println("MERging content count ==================================>     ", contentFoundCount)
-	cur.Close(context.Background())
-	return nil
+	return cur.Close(context.Background())
 }
 
 var contentFoundCount = 0
@@ -1783,12 +1813,11 @@ func (s *Server) MergingLogic(targetOptimus pb.Optimus, play pb.Play, ctx contex
 	//// then checking on the base of categories
 	myStages = append(myStages, bson.D{{"$match", bson.D{{"metadata.categories", bson.D{{"$in", targetOptimus.GetMetadata().GetCategories()}}}}}})
 
-	result, err := baseContent.Aggregate(ctx, myStages, )
+	result, err := baseContent.Aggregate(ctx, myStages)
 
-	if err != nil || result.Err() != nil {
+	if err != nil {
 		//TODO case 1 if the content is not Present
-		log.Println("got error ", err, result.Err())
-		if err == mongo.ErrNoDocuments || result.Err() == mongo.ErrNoDocuments {
+		if err == mongo.ErrNoDocuments {
 			// found new coentent so interest it blindly
 			_, err := baseContent.InsertOne(ctx, targetOptimus)
 			if err != nil {
@@ -1803,7 +1832,7 @@ func (s *Server) MergingLogic(targetOptimus pb.Optimus, play pb.Play, ctx contex
 			}
 			return nil
 		} else {
-			return result.Err()
+			return err
 		}
 	} else {
 		var noDocCounter = 0

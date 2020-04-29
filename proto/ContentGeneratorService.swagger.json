@@ -172,11 +172,11 @@
     "ContentGeneratorServiceContent": {
       "type": "object",
       "properties": {
-        "publishState": {
+        "publish_state": {
           "type": "boolean",
           "format": "boolean"
         },
-        "detailPage": {
+        "detail_page": {
           "type": "boolean",
           "format": "boolean"
         },
@@ -229,7 +229,7 @@
         "title": {
           "type": "string"
         },
-        "imdbId": {
+        "imdb_id": {
           "type": "string"
         },
         "synopsis": {
@@ -248,7 +248,7 @@
           "type": "number",
           "format": "double"
         },
-        "releaseDate": {
+        "release_date": {
           "type": "string"
         },
         "tags": {
@@ -291,11 +291,11 @@
             "type": "string"
           }
         },
-        "kidsSafe": {
+        "kids_safe": {
           "type": "boolean",
           "format": "boolean"
         },
-        "viewCount": {
+        "view_count": {
           "type": "number",
           "format": "double"
         },
@@ -329,7 +329,7 @@
         "ref_id": {
           "type": "string"
         },
-        "tileType": {
+        "tile_type": {
           "$ref": "#/definitions/ContentGeneratorServiceTileType"
         },
         "content": {
@@ -338,11 +338,11 @@
         "metadata": {
           "$ref": "#/definitions/ContentGeneratorServiceMetadata"
         },
-        "createdAt": {
+        "created_at": {
           "type": "string",
           "format": "date-time"
         },
-        "updatedAt": {
+        "updated_at": {
           "type": "string",
           "format": "date-time"
         }
