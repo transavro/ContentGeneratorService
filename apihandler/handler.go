@@ -1,6 +1,7 @@
 package apihandler
 
 import (
+	"bytes"
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/hex"
@@ -547,8 +548,10 @@ func (s *Server) FetchNativeData(request *pb.Request, stream pb.ContentGenerator
 
 func (s *Server) FetchJustWatch(request *pb.Request, stream pb.ContentGeneratorService_FetchJustWatchServer) error {
 
-	//provider map id
-	//jwProvidersArray := []string{"nfx", "hoo", "prv", "hst", "voo", "viu", "jio", "zee", "ern", "itu", "ply", "mbi", "snl", "yot", "gdc", "nfk", "tbv", "ytv", "snx", "cru", "hoc", "abj"}
+	log.Println("JW HIT ")
+	// monetize_type
+	jwMonetizeType := []string{"free", "flatrate", "ads", "rent'", "buy", "5D"}
+	jwProviderArray := []string{"nfx", "hoo", "prv", "hst", "voo", "viu", "jio", "zee", "ern", "itu", "ply", "mbi", "snl", "yot", "gdc", "nfk", "tbv", "ytv", "snx", "cru", "hoc", "abj"}
 
 	jwProvidersMap := make(map[string]int)
 
@@ -598,296 +601,407 @@ func (s *Server) FetchJustWatch(request *pb.Request, stream pb.ContentGeneratorS
 	//catrogories
 	jwCategories := []string{"movie", "shows"}
 
-	// monetize_type
-	//jwMonetizeType := []string{"free", "flatrate", "ads", "rent'", "buy", "5D"}
+	for _, provider := range jwProviderArray {
 
-	for _, categories := range jwCategories {
-		for pKey, pValue := range jwProvidersMap {
-			for _, genre := range jwGenre {
+		pageCounter := 1
 
-				//values := map[string]interface{}{ "monetization_types": jwMonetizeType , "providers": []string{pKey}, "typeassign" : categories}
-				//jsonValue, _ := json.Marshal(values)
-				//resp, err := http.Post("http://affapi.hungama.com/v1/feeds/listing.json?", "application/json", bytes.NewBuffer(jsonValue))
-				//if err != nil {
-				//	return err
-				//}
-				//log.Println("response code ====>   ", resp.StatusCode)
-				//defer resp.Body.Close()
-				//body, err := ioutil.ReadAll(resp.Body)
-				//if err != nil {
-				//	return err
-				//}
-				//if resp.StatusCode != 200 {
-				//	log.Println("not got 200 response")
-				//	continue
-				//}
-				//// parsing json data
-				//var prime map[string]interface{}
-				//// unmarshaling byte[] to interface{}
-				//err = json.Unmarshal(body, &prime)
-				//if err != nil {
-				//	return err
-				//}
+		values := map[string]interface{}{"monetization_types": jwMonetizeType, "page_size": 1000, "page": pageCounter, "content_types": jwCategories, "providers": []string{provider}}
+		jsonValue, _ := json.Marshal(values)
+		resp, err := http.Post("https://apis.justwatch.com/content/titles/en_IN/popular", "application/json", bytes.NewBuffer(jsonValue))
+		if err != nil {
+			return err
+		}
+		log.Println("response code ====>   ", resp.StatusCode)
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		if resp.StatusCode != 200 {
+			log.Println("not got 200 response")
+		}
+		// parsing json data
+		var prime map[string]interface{}
+		// unmarshaling byte[] to interface{}
+		err = json.Unmarshal(body, &prime)
+		if err != nil {
+			return err
+		}
 
-				log.Println("cat ==>   ", categories, "  provider  ", pValue, "  ", pKey, "  genre ", genre)
+		err = s.JWLogic(prime, jwProvidersMap, jwGenre)
+		if err != nil {
+			return err
+		}
 
-				req, err := http.NewRequest("GET", "https://apis.justwatch.com/content/titles/movie/2/locale/en_IN", nil)
-				if err != nil {
-					return err
-				}
-				client := &http.Client{}
-				resp, err := client.Do(req)
-				if err != nil {
-					return err
-				}
+		var totalPageCount int
 
-				defer resp.Body.Close()
-				body, err := ioutil.ReadAll(resp.Body)
-				if err != nil {
-					return err
-				}
+		switch tp := prime["total_pages"].(type) {
+		case int:
+			{
+				totalPageCount = tp
+			}
+		case float32:
+			{
+				totalPageCount = int(tp)
+			}
+		}
 
-				if resp.StatusCode != 200 {
-					log.Println("not got 200 response")
-					continue
-				}
+		for i := 2; i <= totalPageCount; i++ {
+			pageCounter = i
+			values := map[string]interface{}{"monetization_types": jwMonetizeType, "page_size": 1000, "page": pageCounter, "content_types": jwCategories, "providers": []string{provider}}
+			jsonValue, _ := json.Marshal(values)
+			resp, err := http.Post("https://apis.justwatch.com/content/titles/en_IN/popular", "application/json", bytes.NewBuffer(jsonValue))
+			if err != nil {
+				return err
+			}
+			log.Println("response code ====>   ", resp.StatusCode)
+			defer resp.Body.Close()
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return err
+			}
+			if resp.StatusCode != 200 {
+				log.Println("not got 200 response")
+				continue
+			}
+			// parsing json data
+			var prime map[string]interface{}
+			// unmarshaling byte[] to interface{}
+			err = json.Unmarshal(body, &prime)
+			if err != nil {
+				return err
+			}
 
-				// parsing json data
-				var prime map[string]interface{}
-				// unmarshaling byte[] to interface{}
-				err = json.Unmarshal(body, &prime)
-				if err != nil {
-					return err
-				}
+			err = s.JWLogic(prime, jwProvidersMap, jwGenre)
+			if err != nil {
+				return err
+			}
+		}
 
-				// making content
-				var content pb.Content
-				var contentAvlb pb.ContentAvaliable
-				var metadata pb.Metadata
+	}
 
-				content.DetailPage = false
-				content.PublishState = true
+	return nil
+}
 
-				offers := prime["offers"].([]interface{})
+func (s Server) JWLogic(prime map[string]interface{}, jwProvidersMap map[string]int, jwGenre map[string]string) error {
 
-				contentAvlb.TargetId = strings.Split(fmt.Sprint(prime["poster"]), "/")[1]
+	for _, r := range prime["items"].([]interface{}) {
 
-				for _, value := range offers {
-					for mk, mv := range value.(map[string]interface{}) {
+		contentType := r.(map[string]interface{})["object_type"].(string)
+		id := r.(map[string]interface{})["id"].(float64)
 
-						if mk == "monetization_type" {
-							switch mv {
-							case "buy":
-							case "flatrate":
-								{
-									contentAvlb.Monetize = pb.Monetize_Paid
-								}
-							case "rent":
-								{
-									contentAvlb.Monetize = pb.Monetize_Rent
-								}
-							}
-						}else if mk == "provider_id" {
-							for makeKey, mapValue := range jwProvidersMap {
-								log.Println(mv ,"             ********************88     " , makeKey, "       ===========     ", mapValue)
-								if mv == mapValue {
-									log.Println("++++++++++++++++++++      ", GetSourceForJW(makeKey))
-									contentAvlb.Source = GetSourceForJW(makeKey)
-									content.Sources = append(content.Sources, contentAvlb.GetSource())
-									if contentAvlb.GetSource() == "Youtube" {
-										contentAvlb.Type = "CWYT_VIDEO"
-									}else {
-										contentAvlb.Type = "CW_THIRDPARTY"
-									}
+		jwUrl := fmt.Sprintf("https://apis.justwatch.com/content/titles/%s/%s/locale/en_IN", contentType, fmt.Sprint(id))
+
+		req, err := http.NewRequest("GET", jwUrl, nil)
+		if err != nil {
+			return err
+		}
+		client := &http.Client{}
+		resp, err := client.Do(req)
+		if err != nil {
+			return err
+		}
+
+		defer resp.Body.Close()
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+
+		if resp.StatusCode != 200 {
+			log.Println("not got 200 response")
+			continue
+		}
+
+		// parsing json data
+		var prime map[string]interface{}
+		// unmarshaling byte[] to interface{}
+		err = json.Unmarshal(body, &prime)
+		if err != nil {
+			return err
+		}
+
+		// making content
+		var content pb.Content
+		var contentAvalbArray []*pb.ContentAvaliable
+		var metadata pb.Metadata
+
+		content.DetailPage = false
+		content.PublishState = true
+
+		offers := prime["offers"].([]interface{})
+
+		for _, value := range offers {
+			var contentAvlb pb.ContentAvaliable
+			if (prime["poster"] != nil) && (len(strings.Split(fmt.Sprint(prime["poster"]), "/")) > 2) {
+				contentAvlb.TargetId = strings.Split(fmt.Sprint(prime["poster"]), "/")[2]
+			}
+			for mk, mv := range value.(map[string]interface{}) {
+				if mk == "monetization_type" {
+					switch mv {
+					case "buy":
+					case "flatrate":
+						{
+							contentAvlb.Monetize = pb.Monetize_Paid
+						}
+					case "rent":
+						{
+							contentAvlb.Monetize = pb.Monetize_Rent
+						}
+					}
+				} else if mk == "provider_id" {
+					for mapKey, mapValue := range jwProvidersMap {
+						if int(mv.(float64)) == mapValue {
+							contentAvlb.Source = GetSourceForJW(mapKey)
+							contentAvlb.Package = GetPackageNameForJW(mapKey)
+							// check if the source already present
+							sourceFound := false
+							for _, v := range content.Sources {
+								if contentAvlb.GetSource() == v {
+									sourceFound = true
 									break
 								}
 							}
-						}else if mk == "urls" {
-							for dk, dv := range mv.(map[string]interface{}){
-								if dk == "standard_web" {
-									contentAvlb.Target = fmt.Sprint(dv)
-									break
-								}
+							if sourceFound == false {
+								content.Sources = append(content.Sources, contentAvlb.GetSource())
 							}
-						}else if mk == "audio_languages" {
-							for _, val := range mv.([]interface{}) {
-								if val == "en" {
-									metadata.Languages = append(metadata.Languages, "English")
-								}else if val == "hi" {
-									metadata.Languages = append(metadata.Languages, "Hindi")
-								}
+							if contentAvlb.GetSource() == "Youtube" {
+								contentAvlb.Type = "CWYT_VIDEO"
+							} else {
+								contentAvlb.Type = "CW_THIRDPARTY"
+							}
+							break
+						}
+					}
+				} else if mk == "urls" {
+					for dk, dv := range mv.(map[string]interface{}) {
+						if dk == "standard_web" {
+							contentAvlb.Target = fmt.Sprint(dv)
+							break
+						}
+					}
+				} else if mk == "audio_languages" {
+					isAlreadyPresent := false
+					for _, val := range mv.([]interface{}) {
+						log.Println(val)
+						for _, lang := range metadata.GetLanguages() {
+							if lang == isoCodeToLanguage(fmt.Sprint(val)) {
+								isAlreadyPresent = true
+								break
 							}
 						}
-					}
-				}
-
-				// making media
-				var media pb.Media
-				clips := prime["clips"].([]interface{})
-
-				// video
-				for _, clip := range clips {
-					for mk, mv := range clip.(map[string]interface{}){
-						if mk == "external_id" {
-							media.Video = append(media.Video, fmt.Sprintf("https://www.youtube.com/watch?v=%s", mv))
+						if isAlreadyPresent == false {
+							metadata.Languages = append(metadata.Languages, isoCodeToLanguage(fmt.Sprint(val)))
 						}
 					}
 				}
+			}
 
-				//poster
-				portrait := strings.Replace(fmt.Sprint(prime["poster"]) , "{profile}", "s592/movie.webp" , -1)
-				media.Portrait = append(media.Portrait, fmt.Sprintf("https://images.justwatch.com%s", portrait))
-				log.Println(media.Portrait)
+			// rechecking if language is filled or not
+			if metadata.GetLanguages() == nil {
+				metadata.Languages = []string{}
+			}
 
-				// backdrop , ladscape
-				for _, r := range prime["backdrops"].([]interface{}){
-					for mk, mv := range r.(map[string]interface{}){
-						if mk == "backdrop_url" {
-							nameOfTile := fmt.Sprint(prime["full_path"])
-							nameOfTile = strings.Replace(nameOfTile, "/in/movie", "", -1 )
-							nameOfTile = strings.Replace(nameOfTile, "/in/tv-show", "", -1 )
-							backdrop := strings.Replace(fmt.Sprint(mv) , "{profile}", "s1440"+nameOfTile+".webp" , -1)
-							media.Backdrop = append(media.Backdrop, fmt.Sprintf("https://images.justwatch.com%s", backdrop))
-							landscape := strings.Replace(fmt.Sprint(mv) , "{profile}", "s592"+nameOfTile+".webp" , -1)
-							media.Landscape = append(media.Landscape, fmt.Sprintf("https://images.justwatch.com%s", landscape))
-						}
+			// check if already present
+			contentFound := false
+			for _, avaliable := range contentAvalbArray {
+				if avaliable.GetSource() == contentAvlb.GetSource() {
+					contentFound = true
+					break
+				}
+			}
+			if contentFound == false {
+				contentAvalbArray = append(contentAvalbArray, &contentAvlb)
+			}
+		}
+
+		// making media
+		var media pb.Media
+		if prime["clips"] != nil {
+			clips := prime["clips"].([]interface{})
+			// video
+			for _, clip := range clips {
+				for mk, mv := range clip.(map[string]interface{}) {
+					if mk == "external_id" {
+						media.Video = append(media.Video, fmt.Sprintf("https://www.youtube.com/watch?v=%s", mv))
 					}
 				}
+			}
+		} else {
+			media.Video = []string{}
+		}
 
-				//making metadata
+		//poster
+		portrait := strings.Replace(fmt.Sprint(prime["poster"]), "{profile}", "s592/movie.webp", -1)
+		media.Portrait = append(media.Portrait, fmt.Sprintf("https://images.justwatch.com%s", portrait))
+		//log.Println(media.Portrait)
 
-				metadata.Title = fmt.Sprint(prime["title"])
-				metadata.Synopsis = fmt.Sprint(prime["short_description"])
-				metadata.Runtime =  fmt.Sprint(prime["runtime"])
-
-				// genre
-				for _, genreId := range prime["genre_ids"].([]interface{}){
-					metadata.Genre = append(metadata.Genre, jwGenre[fmt.Sprint(genreId)])
-				}
-
-
-				// cast
-				for _, r := range prime["credits"].([]interface{}){
-					if r.(map[string]interface{})["role"] == "ACTOR" {
-						metadata.Cast = append(metadata.Cast, fmt.Sprint(r.(map[string]interface{})["name"]))
-					}else if r.(map[string]interface{})["role"] == "DIRECTOR" {
-						metadata.Directors = append(metadata.Directors, fmt.Sprint(r.(map[string]interface{})["name"]))
+		// backdrop , landscape
+		if prime["backdrops"] != nil {
+			for _, r := range prime["backdrops"].([]interface{}) {
+				for mk, mv := range r.(map[string]interface{}) {
+					if mk == "backdrop_url" {
+						nameOfTile := fmt.Sprint(prime["full_path"])
+						nameOfTile = strings.Replace(nameOfTile, "/in/movie", "", -1)
+						nameOfTile = strings.Replace(nameOfTile, "/in/tv-show", "", -1)
+						backdrop := strings.Replace(fmt.Sprint(mv), "{profile}", "s1440"+nameOfTile+".webp", -1)
+						media.Backdrop = append(media.Backdrop, fmt.Sprintf("https://images.justwatch.com%s", backdrop))
+						landscape := strings.Replace(fmt.Sprint(mv), "{profile}", "s1440"+nameOfTile+".webp", -1)
+						media.Landscape = append(media.Landscape, fmt.Sprintf("https://images.justwatch.com%s", landscape))
 					}
 				}
+			}
+		} else {
+			media.Backdrop = []string{}
+		}
 
-				//categories
-				metadata.Categories = append(metadata.Categories,  categories)
+		media.Banner = []string{}
 
-				// imdbid
-				for _, r := range prime["scoring"].([]interface{}){
-					if r.(map[string]interface{})["provider_type"] == "tomato_userrating:meter"{
-						metadata.Rating = r.(map[string]interface{})["value"].(float64)
-						break
-					}
+		//making metadata
+
+		metadata.Title = fmt.Sprint(prime["title"])
+		metadata.Synopsis = fmt.Sprint(prime["short_description"])
+		if prime["runtime"] != nil {
+			metadata.Runtime = fmt.Sprint(prime["runtime"])
+		}
+
+		// genre
+		if prime["genre_ids"] != nil {
+			for _, genreId := range prime["genre_ids"].([]interface{}) {
+				metadata.Genre = append(metadata.Genre, jwGenre[fmt.Sprint(genreId)])
+			}
+		} else {
+			metadata.Genre = []string{}
+		}
+
+		// cast
+		if prime["credits"] != nil {
+			for _, r := range prime["credits"].([]interface{}) {
+				if r.(map[string]interface{})["role"] == "ACTOR" {
+					metadata.Cast = append(metadata.Cast, fmt.Sprint(r.(map[string]interface{})["name"]))
+				} else if r.(map[string]interface{})["role"] == "DIRECTOR" {
+					metadata.Directors = append(metadata.Directors, fmt.Sprint(r.(map[string]interface{})["name"]))
 				}
+			}
+		}
 
+		// rechecking the cast nd director
+		if len(metadata.GetCast()) == 0 {
+			metadata.Cast = []string{}
+		} else if len(metadata.GetDirectors()) == 0 {
+			metadata.Directors = []string{}
+		}
 
-				for _, r := range prime["external_ids"].([]interface{}){
-					if r.(map[string]interface{})["provider"] == "imdb"{
-						metadata.ImdbId = fmt.Sprint(r.(map[string]interface{})["external_id"])
-						break
-					}
+		//categories
+		if prime["object_type"] != nil {
+			if prime["object_type"].(string) == "movie" {
+				metadata.Categories = append(metadata.Categories, "Movies")
+			} else if prime["object_type"].(string) == "show" {
+				metadata.Categories = append(metadata.Categories, "Tv Show")
+			}
+		}
+
+		// imdbid
+		if prime["scoring"] != nil {
+			for _, r := range prime["scoring"].([]interface{}) {
+				if r.(map[string]interface{})["provider_type"] == "tomato_userrating:meter" {
+					metadata.Rating = r.(map[string]interface{})["value"].(float64)
+					break
 				}
+			}
+		}
 
-				//Year
-				switch i := prime["original_release_year"].(type) {
-				case int:
-					{
-						metadata.Year = int32(i)
-					}
-				case float64:
-					{
-						metadata.Year = int32(i)
-					}
-				case int32:
-					{
-						metadata.Year = i
-					}
+		if prime["external_ids"] != nil {
+			for _, r := range prime["external_ids"].([]interface{}) {
+				if r.(map[string]interface{})["provider"] == "imdb" {
+					metadata.ImdbId = fmt.Sprint(r.(map[string]interface{})["external_id"])
+					break
 				}
+			}
+		}
 
+		//Year
+		switch i := prime["original_release_year"].(type) {
+		case int:
+			{
+				metadata.Year = int32(i)
+			}
+		case float64:
+			{
+				metadata.Year = int32(i)
+			}
+		case int32:
+			{
+				metadata.Year = i
+			}
+		}
 
-
-				//kidsSafe
+		//kidsSafe
+		if len(metadata.GetGenre()) > 0 {
+			for _, genre := range metadata.GetGenre() {
 				if genre == "Kids & Family" {
 					metadata.KidsSafe = true
-				}else {
+				} else {
 					metadata.KidsSafe = false
 				}
+			}
+		}
 
-				metadata.Country = []string{}
+		metadata.Country = []string{"INDIA"}
 
+		//relasedate
+		metadata.ReleaseDate = fmt.Sprintf("05-01-%d", metadata.GetYear())
 
-				//relasedate
-				metadata.ReleaseDate = fmt.Sprintf("05-01-%d", metadata.GetYear())
+		//TAGs
+		metadata.Tags = append(metadata.Tags, metadata.GetGenre()...)
+		metadata.Tags = append(metadata.Tags, metadata.GetCategories()...)
 
+		//mood
+		metadata.Mood = []int32{}
 
-				//TAGs
-				metadata.Tags = append(metadata.Tags, metadata.GetGenre()...)
-				metadata.Tags = append(metadata.Tags, metadata.GetCategories()...)
+		//TODO converting hungama duration in our format.
+		bytesArray, _ := GenerateRandomBytes(32)
+		hasher := md5.New()
+		hasher.Write(bytesArray)
+		ref_id := hex.EncodeToString(hasher.Sum(nil))
 
-				//mood
-				metadata.Mood = []int32{}
+		ts, _ := ptypes.TimestampProto(time.Now())
 
+		var tileType = pb.TileType_ImageTile
+		if len(media.GetVideo()) > 0 {
+			tileType = pb.TileType_VideoTile
+		}
 
-				//TODO converting hungama duration in our format.
-				bytesArray, _ := GenerateRandomBytes(32)
-				hasher := md5.New()
-				hasher.Write(bytesArray)
-				ref_id := hex.EncodeToString(hasher.Sum(nil))
+		optimus := &pb.Optimus{Metadata: &metadata, RefId: ref_id, Content: &content, Media: &media, CreatedAt: ts, TileType: tileType}
 
-				ts, _ := ptypes.TimestampProto(time.Now())
-
-				var tileType = pb.TileType_ImageTile
-				if len(media.GetVideo()) > 0 {
-					tileType = pb.TileType_VideoTile
+		//check if already presnet
+		result := s.OptimusDB.Collection("test_justwatch_monetize").FindOne(context.Background(), bson.D{{"contentavailable.targetid", contentAvalbArray[0].GetTargetId()}})
+		if result.Err() != nil {
+			if result.Err() == mongo.ErrNoDocuments {
+				//log.Println("Inserting..   ", optimus.GetMetadata().GetTitle())
+				_, err = s.OptimusDB.Collection("test_justwatch_content").InsertOne(context.Background(), optimus)
+				if err != nil {
+					return err
 				}
-
-				optimus := &pb.Optimus{Metadata: &metadata, RefId: ref_id, Content: &content, Media: &media, CreatedAt: ts, TileType: tileType}
-
-				// check if already presnet
-				log.Println("Checking if already present ===>   ", optimus.GetMetadata().GetTitle())
-				result := s.OptimusDB.Collection("test_justwatch_monetize").FindOne(context.Background(), bson.D{{"contentavailable.targetid", contentAvlb.GetTargetId()}})
-				if result.Err() != nil {
-					if result.Err() == mongo.ErrNoDocuments {
-						log.Println("Inserting..")
-						_, err = s.OptimusDB.Collection("test_justwatch_content").InsertOne(context.Background(), optimus)
-						if err != nil {
-							return err
-						}
-						_, err = s.OptimusDB.Collection("test_justwatch_monetize").InsertOne(context.Background(), pb.Play{
-							ContentAvailable: []*pb.ContentAvaliable{&contentAvlb},
-							RefId:            ref_id,
-						})
-						if err != nil {
-							return err
-						}
-						log.Println("sending data to client...")
-						stream.Send(optimus)
-					} else {
-						return result.Err()
-					}
-				} else {
-					log.Println("content already present", optimus.GetMetadata().GetTitle())
+				_, err = s.OptimusDB.Collection("test_justwatch_monetize").InsertOne(context.Background(), pb.Play{
+					ContentAvailable: contentAvalbArray,
+					RefId:            optimus.GetRefId(),
+				})
+				if err != nil {
+					return err
 				}
-
-				break
+			} else {
+				return result.Err()
 			}
 		}
 	}
 	return nil
 }
 
-
 func GetSourceForJW(sourceCode interface{}) string {
 	sources := fmt.Sprint(sourceCode)
-	log.Println("888888888888888888888888888888    +++++++++++++++++++==     ", sources)
 	switch sources {
-	case "nxt":
+	case "nfx":
 		{
 			return "Netflix"
 		}
@@ -974,6 +1088,159 @@ func GetSourceForJW(sourceCode interface{}) string {
 	case "abj":
 		{
 			return "ALTBalaji"
+		}
+	}
+	return ""
+}
+
+func GetPackageNameForJW(sourceCode interface{}) string {
+	sources := fmt.Sprint(sourceCode)
+	switch sources {
+	case "nfx":
+		{
+			return "com.netflix.mediaclient"
+		}
+	case "hoo":
+		{
+			return "tv.hooq.android"
+		}
+	case "prv":
+		{
+			return "com.amazon.avod.thirdpartyclient"
+		}
+	case "hst":
+		{
+			return "in.startv.hotstar"
+		}
+	case "voo":
+		{
+			return "com.tv.v18.viola"
+		}
+	case "viu":
+		{
+			return "com.vuclip.viu"
+		}
+	case "jio":
+		{
+			return "com.jio.media.ondemand"
+		}
+	case "zee":
+		{
+			return "com.graymatrix.did"
+		}
+	case "ern":
+		{
+			return "com.erosnow "
+		}
+	case "ply":
+		{
+			return "com.android.vending"
+		}
+	case "mbi":
+		{
+			return "com.mubi"
+		}
+	case "snl":
+		{
+			return "com.sonyliv"
+		}
+	case "yot":
+		{
+			return "com.google.android.youtube.tv"
+		}
+	case "nfk":
+		{
+			return "com.netflix.mediaclient"
+		}
+	case "tbv":
+		{
+			return "com.tubitv"
+		}
+	case "ytv":
+		{
+			return "com.tru"
+		}
+	case "snx":
+		{
+			return "com.suntv.sunnxt"
+		}
+	case "cru":
+		{
+			return "Crunchyroll"
+		}
+	case "hoc":
+		{
+			return "com.viewlift.hoichoi"
+		}
+	case "abj":
+		{
+			return "com.balaji.alt"
+		}
+	}
+	return ""
+}
+
+func isoCodeToLanguage(langCode string) string {
+	switch langCode {
+	case "en":
+		{
+			return "English"
+		}
+	case "hi":
+		{
+			return "Hindi"
+		}
+	case "ta":
+		{
+			return "Tamil"
+		}
+	case "ko":
+		{
+			return "Korean"
+		}
+	case "te":
+		{
+			return "Telugu"
+		}
+	case "ka":
+		{
+			return "Georgian"
+		}
+	case "kn":
+		{
+			return "Kannada"
+		}
+	case "mr":
+		{
+			return "Marathi"
+		}
+	case "bn":
+		{
+			return "Bangla"
+		}
+	case "ml":
+		{
+			return "Malayalam"
+		}
+	case "zh":
+		{
+			return "Chinese"
+		}
+	case "or":
+		{
+			return "Oriya"
+		}
+	case "pa":
+		{
+			return "Punjabi"
+		}
+	case "ja":
+		{
+			return "Japanese"
+		}
+	case "fr":
+		{
+			return "French"
 		}
 	}
 	return ""
@@ -1068,7 +1335,7 @@ func (s *Server) FetchHungamaPlay(request *pb.Request, stream pb.ContentGenerato
 							media.Video = []string{}
 						}
 
-						//portriat
+						//landscape
 						resAry = []string{}
 						if mediaSet["600x415"] != nil && mediaSet["600x415"] != "" {
 							if !strings.Contains(fmt.Sprint(mediaSet["600x415"]), "http://stat") {
@@ -1078,6 +1345,36 @@ func (s *Server) FetchHungamaPlay(request *pb.Request, stream pb.ContentGenerato
 						if mediaSet["700x394"] != nil && mediaSet["700x394"] != "" {
 							if !strings.Contains(fmt.Sprint(mediaSet["700x394"]), "http://stat") {
 								resAry = append(resAry, fmt.Sprint(mediaSet["700x394"]))
+							}
+						}
+						if mediaSet["285x135"] != nil && mediaSet["285x135"] != "" {
+							if !strings.Contains(fmt.Sprint(mediaSet["285x135"]), "http://stat") {
+								resAry = append(resAry, fmt.Sprint(mediaSet["285x135"]))
+							}
+						}
+						media.Landscape = resAry
+
+						//portriat
+						resAry = []string{}
+
+						if mediaSet["537x768"] != nil && mediaSet["537x768"] != "" {
+							if !strings.Contains(fmt.Sprint(mediaSet["537x768"]), "http://stat") {
+								resAry = append(resAry, fmt.Sprint(mediaSet["537x768"]))
+							}
+						}
+						if mediaSet["154x220"] != nil && mediaSet["154x220"] != "" {
+							if !strings.Contains(fmt.Sprint(mediaSet["154x220"]), "http://stat") {
+								resAry = append(resAry, fmt.Sprint(mediaSet["154x220"]))
+							}
+						}
+						if mediaSet["190x273"] != nil && mediaSet["190x273"] != "" {
+							if !strings.Contains(fmt.Sprint(mediaSet["190x273"]), "http://stat") {
+								resAry = append(resAry, fmt.Sprint(mediaSet["190x273"]))
+							}
+						}
+						if mediaSet["150x210"] != nil && mediaSet["150x210"] != "" {
+							if !strings.Contains(fmt.Sprint(mediaSet["150x210"]), "http://stat") {
+								resAry = append(resAry, fmt.Sprint(mediaSet["150x210"]))
 							}
 						}
 						if mediaSet["500x500"] != nil && mediaSet["500x500"] != "" {
@@ -1101,35 +1398,6 @@ func (s *Server) FetchHungamaPlay(request *pb.Request, stream pb.ContentGenerato
 							}
 						}
 						media.Portrait = resAry
-
-						//landscape
-						resAry = []string{}
-						if mediaSet["537x768"] != nil && mediaSet["537x768"] != "" {
-							if !strings.Contains(fmt.Sprint(mediaSet["537x768"]), "http://stat") {
-								resAry = append(resAry, fmt.Sprint(mediaSet["537x768"]))
-							}
-						}
-						if mediaSet["154x220"] != nil && mediaSet["154x220"] != "" {
-							if !strings.Contains(fmt.Sprint(mediaSet["154x220"]), "http://stat") {
-								resAry = append(resAry, fmt.Sprint(mediaSet["154x220"]))
-							}
-						}
-						if mediaSet["190x273"] != nil && mediaSet["190x273"] != "" {
-							if !strings.Contains(fmt.Sprint(mediaSet["190x273"]), "http://stat") {
-								resAry = append(resAry, fmt.Sprint(mediaSet["190x273"]))
-							}
-						}
-						if mediaSet["150x210"] != nil && mediaSet["150x210"] != "" {
-							if !strings.Contains(fmt.Sprint(mediaSet["150x210"]), "http://stat") {
-								resAry = append(resAry, fmt.Sprint(mediaSet["150x210"]))
-							}
-						}
-						if mediaSet["285x135"] != nil && mediaSet["285x135"] != "" {
-							if !strings.Contains(fmt.Sprint(mediaSet["285x135"]), "http://stat") {
-								resAry = append(resAry, fmt.Sprint(mediaSet["285x135"]))
-							}
-						}
-						media.Landscape = resAry
 
 						if tile["title"] != nil && tile["title"] != "" {
 							metadata.Title = strings.ToValidUTF8(fmt.Sprint(tile["title"]), "")
@@ -1715,22 +1983,62 @@ func (s *Server) MergingOptimus(request *pb.Request, stream pb.ContentGeneratorS
 
 func (s *Server) MergingParty() error {
 
-	//merging altbalaji content
-	hungamaContent := s.OptimusDB.Collection("test_altbalaji_content")
-	hungamaMonetize := s.OptimusDB.Collection("test_altbalaji_monetize")
-
-	//merging schemaroo content
-	//hungamaContent := s.OptimusDB.Collection("test_schemaroo_content")
-	//hungamaMonetize := s.OptimusDB.Collection("test_schemaroo_monetize")
+	var hungamaContent, hungamaMonetize *mongo.Collection
+	var err error
 
 	//merging native content
-	//hungamaContent := s.OptimusDB.Collection("test_native_content")
-	//hungamaMonetize := s.OptimusDB.Collection("test_native_monetize")
+	hungamaContent = s.OptimusDB.Collection("test_native_content")
+	hungamaMonetize = s.OptimusDB.Collection("test_native_monetize")
+
+	err = s.startProcess(hungamaContent, hungamaMonetize)
+
+	if err != nil {
+		return err
+	}
 
 	//merging hungama content
-	//hungamaContent := s.OptimusDB.Collection("test_hungama_content")
-	//hungamaMonetize := s.OptimusDB.Collection("test_hungama_monetize")
+	hungamaContent = s.OptimusDB.Collection("test_hungama_content")
+	hungamaMonetize = s.OptimusDB.Collection("test_hungama_monetize")
 
+	err = s.startProcess(hungamaContent, hungamaMonetize)
+
+	if err != nil {
+		return err
+	}
+
+	//merging altbalaji content
+	hungamaContent = s.OptimusDB.Collection("test_altbalaji_content")
+	hungamaMonetize = s.OptimusDB.Collection("test_altbalaji_monetize")
+
+	err = s.startProcess(hungamaContent, hungamaMonetize)
+
+	if err != nil {
+		return err
+	}
+
+	//merging schemaroo content
+	hungamaContent = s.OptimusDB.Collection("test_schemaroo_content")
+	hungamaMonetize = s.OptimusDB.Collection("test_schemaroo_monetize")
+
+	err = s.startProcess(hungamaContent, hungamaMonetize)
+
+	if err != nil {
+		return err
+	}
+
+	//merging justwatch content
+	hungamaContent = s.OptimusDB.Collection("test_justwatch_content")
+	hungamaMonetize = s.OptimusDB.Collection("test_justwatch_monetize")
+
+	err = s.startProcess(hungamaContent, hungamaMonetize)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s Server) startProcess(hungamaContent, hungamaMonetize *mongo.Collection) error {
 	cur, err := hungamaContent.Find(context.Background(), bson.D{{}})
 	if err != nil {
 		return err
@@ -2114,18 +2422,23 @@ func (s *Server) MergingLogic(targetOptimus pb.Optimus, play pb.Play, ctx contex
 				if err != nil {
 					return err
 				}
+				isSourcePresent := false
 				for _, v := range play.ContentAvailable {
-					if v.Source != contentAvlb.Source {
-						play.ContentAvailable = append(play.ContentAvailable, contentAvlb)
-						_, err = baseMonetize.ReplaceOne(ctx, montizeFilter, play)
-						if err != nil {
-							return err
-						}
+					if v.Source == contentAvlb.Source {
+						isSourcePresent = true
 						break
+					}
+				}
+				if isSourcePresent == false {
+					play.ContentAvailable = append(play.ContentAvailable, contentAvlb)
+					_, err = baseMonetize.ReplaceOne(ctx, montizeFilter, play)
+					if err != nil {
+						return err
 					}
 				}
 			}
 		}
+
 		if noDocCounter == 0 {
 			// found new content so inserting it blindly
 			_, err := baseContent.InsertOne(ctx, targetOptimus)
