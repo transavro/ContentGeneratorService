@@ -1,14 +1,13 @@
 package main
 
 import (
+	"io"
+	"log"
+
 	pb "github.com/transavro/ContentGeneratorService/proto"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	"io"
-	"log"
 )
-
-
 
 func main() {
 
@@ -19,18 +18,18 @@ func main() {
 
 	client := pb.NewContentGeneratorServiceClient(conn)
 
-	resp , err := client.FetchAltBalaji(context.Background(), &pb.Request{})
+	resp, err := client.MergingOptimus(context.Background(), &pb.Request{})
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	for{
-		response , err := resp.Recv()
+	for {
+		response, err := resp.Recv()
 		if err != nil {
 			if err == io.EOF {
 				break
-			}else {
+			} else {
 				log.Fatal(err)
 			}
 		}

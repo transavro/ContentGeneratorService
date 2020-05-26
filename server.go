@@ -2,6 +2,11 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"net"
+	"net/http"
+	"time"
+
 	codecs "github.com/amsokol/mongo-go-driver-protobuf"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	pbAuth "github.com/transavro/AuthService/proto"
@@ -15,19 +20,15 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"log"
-	"net"
-	"net/http"
-	"time"
 )
 
 const (
-	atlasMongoHost          = "mongodb://nayan:tlwn722n@cluster0-shard-00-00-8aov2.mongodb.net:27017,cluster0-shard-00-01-8aov2.mongodb.net:27017,cluster0-shard-00-02-8aov2.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority"
+	atlasMongoHost = "mongodb://nayan:tlwn722n@cluster0-shard-00-00-8aov2.mongodb.net:27017,cluster0-shard-00-01-8aov2.mongodb.net:27017,cluster0-shard-00-02-8aov2.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority"
 	//developmentMongoHost = "mongodb://dev-uni.cloudwalker.tv:6592"
 	//developmentMongoHost = "mongodb://192.168.1.9:27017"
-	schedularRedisHost   = ":6379"
-	grpc_port        = ":7780"
-	rest_port		 = ":7781"
+	schedularRedisHost = ":6379"
+	grpc_port          = ":7780"
+	rest_port          = ":7781"
 )
 
 // private type for Context keys
@@ -40,12 +41,11 @@ const (
 var optimusDB *mongo.Database
 var nativeTile *mongo.Collection
 
-
 // Multiple init() function
 func init() {
 	fmt.Println("Welcome to init() function")
 	optimusDB = getMongoCollection("transavro", "test_content", atlasMongoHost)
-	nativeTile = getMongoCollection("test", "cwmovies", atlasMongoHost).Collection("tiles")
+	nativeTile = getMongoCollection("test", "cwmovies", atlasMongoHost).Collection("cwmovies")
 }
 
 func unaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
@@ -57,16 +57,16 @@ func unaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServ
 	return handler(ctx, req)
 }
 
-func checkingJWTToken(ctx context.Context) error{
+func checkingJWTToken(ctx context.Context) error {
 	meta, ok := metadata.FromIncomingContext(ctx)
 	if !ok {
-		return status.Error(codes.NotFound, fmt.Sprintf("no auth meta-data found in request" ))
+		return status.Error(codes.NotFound, fmt.Sprintf("no auth meta-data found in request"))
 	}
 
 	token := meta["token"]
 
 	if len(token) == 0 {
-		return  status.Error(codes.NotFound, fmt.Sprintf("Token not found" ))
+		return status.Error(codes.NotFound, fmt.Sprintf("Token not found"))
 	}
 
 	// calling auth service
@@ -82,14 +82,14 @@ func checkingJWTToken(ctx context.Context) error{
 		Token: token[0],
 	})
 	if err != nil {
-		return  status.Error(codes.NotFound, fmt.Sprintf("Invalid token:  %s ", err ))
-	}else {
+		return status.Error(codes.NotFound, fmt.Sprintf("Invalid token:  %s ", err))
+	} else {
 		return nil
 	}
 }
 
 // streamAuthIntercept intercepts to validate authorization
-func streamIntercept(server interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler, ) error {
+func streamIntercept(server interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 	err := checkingJWTToken(stream.Context())
 	if err != nil {
 		return err
@@ -116,7 +116,6 @@ func startGRPCServer(address string) error {
 	// attach the Ping service to the server
 	pb.RegisterContentGeneratorServiceServer(grpcServer, &s)
 
-
 	log.Printf("starting HTTP/2 gRPC server on %s", address)
 	if err := grpcServer.Serve(lis); err != nil {
 		return fmt.Errorf("failed to serve: %s", err)
@@ -124,19 +123,16 @@ func startGRPCServer(address string) error {
 	return nil
 }
 
-
-
 func startRESTServer(address, grpcAddress string) error {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
 	//mux := runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(runtime.DefaultHeaderMatcher),
-		//runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{OrigName:false, EnumsAsInts:true, EmitDefaults:true}))
+	//runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{OrigName:false, EnumsAsInts:true, EmitDefaults:true}))
 
 	mux := runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(runtime.DefaultHeaderMatcher),
-		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{EmitDefaults:true}))
-
+		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{EmitDefaults: true}))
 
 	opts := []grpc.DialOption{grpc.WithInsecure()} // Register ping
 
@@ -160,8 +156,6 @@ func getMongoCollection(dbName, collectionName, mongoHost string) *mongo.Databas
 	}
 	return mongoClient.Database(dbName)
 }
-
-
 
 func main() {
 	// fire the gRPC server in a goroutine
