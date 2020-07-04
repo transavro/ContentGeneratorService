@@ -151,12 +151,28 @@ func (e *Server) makingTileObj(
 	*ref_id = makingRefId()
 	makingOptimus(optimus, media, content, metadata, ref_id)
 	// Add if already present in DB
-	addHungamaNotInDB(e.OptimusDB.Collection("test_hungama_content"),
-		e.OptimusDB.Collection("test_hungama_monetize"),
+	addHungamaNotInDB(e.OptimusDB.Collection("nayan_hungama_content"),
+		e.OptimusDB.Collection("nayan_hungama_monetize"),
 		contentAvlb,
 		optimus,
 		stream,
 	)
+}
+
+func makingOptimus(
+	optimus *pb.Optimus,
+	media *pb.Media,
+	content *pb.Content,
+	metadata *pb.Metadata,
+	ref_id *string) {
+
+	ts, _ := ptypes.TimestampProto(time.Now())
+	optimus.Metadata = metadata
+	optimus.Content = content
+	optimus.Media = media
+	optimus.CreatedAt = ts
+	optimus.RefId = *ref_id
+	optimus.TileType = pb.TileType_ImageTile
 }
 
 func makingMedia(tile map[string]interface{}, media *pb.Media) {
@@ -521,26 +537,6 @@ func makingJsonMap(resp *http.Response, result map[string]interface{}) error {
 	}
 	return resp.Body.Close()
 }
-
-
-// perfectly done dont touch it.
-func makingOptimus(
-	optimus *pb.Optimus,
-	media *pb.Media,
-	content *pb.Content,
-	metadata *pb.Metadata,
-	ref_id *string) {
-
-	ts, _ := ptypes.TimestampProto(time.Now())
-	optimus.Metadata = metadata
-	optimus.Content = content
-	optimus.Media = media
-	optimus.CreatedAt = ts
-	optimus.RefId = *ref_id
-	optimus.TileType = pb.TileType_ImageTile
-}
-
-
 
 // TODO Algo
 
