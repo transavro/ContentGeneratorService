@@ -77,20 +77,35 @@ func (s *Server) FetchJustWatch(_ *pb.Request, _ pb.ContentGeneratorService_Fetc
 
 		pageCounter := 1
 
-		values := map[string]interface{}{"monetization_types": jwMonetizeType, "page_size": 1000, "page": pageCounter, "content_types": jwCategories, "providers": []string{provider}}
+		values := map[string]interface{}{
+			"monetization_types": jwMonetizeType,
+			"page_size": 100,
+			"page": pageCounter,
+			"genre" : jwGenre,
+			"content_types": jwCategories,
+			"providers": []string{provider},
+		}
+
 		jsonValue, _ := json.Marshal(values)
-		resp, err := http.Post("https://apis.justwatch.com/content/titles/en_IN/popular", "application/json", bytes.NewBuffer(jsonValue))
+
+		resp, err := http.Post(
+			"https://apis.justwatch.com/content/titles/en_IN/popular",
+			"application/json",
+			bytes.NewBuffer(jsonValue))
+
+
 		if err != nil {
 			return err
 		}
-		log.Println("response code ====>   ", resp.StatusCode)
+		log.Println("response code 1 ====>   ", resp.StatusCode)
 		defer resp.Body.Close()
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return err
 		}
 		if resp.StatusCode != 200 {
-			log.Println("not got 200 response")
+			log.Println("not got 200 1 response")
+			continue
 		}
 		// parsing json data
 		var prime map[string]interface{}
@@ -100,10 +115,6 @@ func (s *Server) FetchJustWatch(_ *pb.Request, _ pb.ContentGeneratorService_Fetc
 			return err
 		}
 
-		err = s.JWLogic(prime, jwProvidersMap, jwGenre)
-		if err != nil {
-			return err
-		}
 
 		var totalPageCount int
 
@@ -116,24 +127,46 @@ func (s *Server) FetchJustWatch(_ *pb.Request, _ pb.ContentGeneratorService_Fetc
 			{
 				totalPageCount = int(tp)
 			}
+		case float64:
+			{
+				totalPageCount = int(tp)
+			}
+		}
+		println("Total Pages  = ", totalPageCount)
+
+
+		err = s.JWLogic(prime, jwProvidersMap, jwGenre)
+		if err != nil {
+			return err
 		}
 
+
+
 		for i := 2; i <= totalPageCount; i++ {
+			println("page Lopping ", i, " of ", totalPageCount)
 			pageCounter = i
-			values := map[string]interface{}{"monetization_types": jwMonetizeType, "page_size": 1000, "page": pageCounter, "content_types": jwCategories, "providers": []string{provider}}
+			values := map[string]interface{}{
+				"monetization_types": jwMonetizeType,
+				"page_size": 100,
+				"genre" : jwGenre,
+				"page": pageCounter,
+				"content_types": jwCategories,
+				"providers": []string{provider},
+			}
 			jsonValue, _ := json.Marshal(values)
+
 			resp, err := http.Post("https://apis.justwatch.com/content/titles/en_IN/popular", "application/json", bytes.NewBuffer(jsonValue))
 			if err != nil {
 				return err
 			}
-			log.Println("response code ====>   ", resp.StatusCode)
+			log.Println("response code 2 ====>   ", resp.StatusCode)
 			defer resp.Body.Close()
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				return err
 			}
 			if resp.StatusCode != 200 {
-				log.Println("not got 200 response")
+				log.Println("not got 200  response  2")
 				continue
 			}
 			// parsing json data
@@ -142,6 +175,11 @@ func (s *Server) FetchJustWatch(_ *pb.Request, _ pb.ContentGeneratorService_Fetc
 			err = json.Unmarshal(body, &prime)
 			if err != nil {
 				return err
+			}
+
+			if prime == nil {
+				println("Prime found nill")
+				continue
 			}
 
 			err = s.JWLogic(prime, jwProvidersMap, jwGenre)

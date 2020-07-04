@@ -44,8 +44,8 @@ var nativeTile *mongo.Collection
 // Multiple init() function
 func init() {
 	fmt.Println("Welcome to init() function")
-	optimusDB = getMongoCollection("transavro", "test_content", atlasMongoHost)
-	nativeTile = getMongoCollection("test", "cwmovies", atlasMongoHost).Collection("cwmovies")
+	optimusDB = getMongoCollection("gigatiles", "optimus_content", atlasMongoHost)
+	nativeTile = getMongoCollection("cloudwalkerx2devel", "tiles", atlasMongoHost).Collection("tiles")
 }
 
 func unaryInterceptor(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
@@ -132,7 +132,7 @@ func startRESTServer(address, grpcAddress string) error {
 	//runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{OrigName:false, EnumsAsInts:true, EmitDefaults:true}))
 
 	mux := runtime.NewServeMux(runtime.WithIncomingHeaderMatcher(runtime.DefaultHeaderMatcher),
-		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{EmitDefaults: true}))
+		runtime.WithMarshalerOption(runtime.MIMEWildcard, &runtime.JSONPb{EmitDefaults: true, OrigName:false, EnumsAsInts:true}))
 
 	opts := []grpc.DialOption{grpc.WithInsecure()} // Register ping
 

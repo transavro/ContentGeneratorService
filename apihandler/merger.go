@@ -31,20 +31,20 @@ func (s *Server) MergingOptimus(_ *pb.Request, _ pb.ContentGeneratorService_Merg
 func (s *Server) MergingParty() error {
 
 	//merging altbalaji content
-	// hungamaContent := s.OptimusDB.Collection("test_altbalaji_content")
-	// hungamaMonetize := s.OptimusDB.Collection("test_altbalaji_monetize")
+	//hungamaContent := s.OptimusDB.Collection("test_altbalaji_content")
+	//hungamaMonetize := s.OptimusDB.Collection("test_altbalaji_monetize")
 
 	//merging schemaroo content
-	// hungamaContent := s.OptimusDB.Collection("test_schemaroo_content")
-	// hungamaMonetize := s.OptimusDB.Collection("test_schemaroo_monetize")
+	//hungamaContent := s.OptimusDB.Collection("test_schemaroo_content")
+	//hungamaMonetize := s.OptimusDB.Collection("test_schemaroo_monetize")
 
 	//merging native content
-	// hungamaContent := s.OptimusDB.Collection("test_native_content")
-	// hungamaMonetize := s.OptimusDB.Collection("test_native_monetize")
+	//hungamaContent := s.OptimusDB.Collection("test_native_content")
+	//hungamaMonetize := s.OptimusDB.Collection("test_native_monetize")
 
 	//merging hungama content
-	// hungamaContent := s.OptimusDB.Collection("test_hungama_content")
-	// hungamaMonetize := s.OptimusDB.Collection("test_hungama_monetize")
+	//hungamaContent := s.OptimusDB.Collection("test_hungama_content")
+	//hungamaMonetize := s.OptimusDB.Collection("test_hungama_monetize")
 
 	//merging JUSTWATCH content
 	hungamaContent := s.OptimusDB.Collection("test_justwatch_content")
@@ -467,6 +467,7 @@ func (s *Server) MergingLogic(targetOptimus pb.Optimus, play pb.Play, ctx contex
 
 func GenerateRandomBytes(n int) ([]byte, error) {
 	b := make([]byte, n)
+	rand.Seed(time.Now().UTC().UnixNano())
 	_, err := rand.Read(b)
 	// Note that err == nil only if we read len(b) bytes.
 	if err != nil {
