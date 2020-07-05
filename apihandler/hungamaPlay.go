@@ -25,7 +25,7 @@ import (
 var (
 	hungamalanguage = [...]string{"hindi", "english", "telugu", "kannada", "tamil", "malayalam", "punjabi", "bengali", "bhojpuri", "gujarati", "marathi", "oriya", "rajasthani"}
 
-	hungamaActions = [...]string{"videos", "movies", "shortfilms", "tvshow"}
+	hungamaActions = [...]string{"movies", "shortfilms", "tvshow"}
 
 	hungamaGenre = [...]string{"Drama", "Action", "Comedy", "Romance", "Family", "Crime", "Thriller", "Musical", "Horror", "Animation", "Social",
 		"Adventure", "Fantasy", "Mystery", "Mythology", "Devotional", "History", "Adult", "Awards", "Biography", "Patriotic", "Sci-Fi", "Sports", "Kids"}
@@ -138,6 +138,22 @@ func (e *Server) makingTileObj(
 	stream pb.ContentGeneratorService_FetchHungamaPlayServer,
 ) {
 	// preparing tile obj
+	returnFlag := false
+	if tile["type"] != nil && tile["type"] != "" {
+		tags := strings.Split(fmt.Sprint(tile["type"]), ",")
+		for _, tag := range tags {
+			if strings.TrimSpace(tag) == "Movie Videos" {
+				returnFlag = true
+			} else if strings.TrimSpace(tag) == "Events and Broadcasts Video" {
+				returnFlag = true
+			} else if strings.TrimSpace(tag) == "Music Video Track" {
+				returnFlag = true
+			}
+		}
+	}
+	if returnFlag {
+		return
+	}
 
 	//making media
 	makingMedia(tile, media)
@@ -343,8 +359,8 @@ func makingMetaData(tile map[string]interface{}, metadata *pb.Metadata) () {
 				metadata.Categories = append(metadata.Categories, "Movies")
 			} else if strings.TrimSpace(tag) == "Short Films" {
 				metadata.Categories = append(metadata.Categories, "Short Film")
-			} else {
-				metadata.Categories = append(metadata.Categories, strings.TrimSpace(tag))
+			} else if strings.TrimSpace(tag) == "TV Series" {
+				metadata.Categories = append(metadata.Categories, "TV Series")
 			}
 		}
 	} else {

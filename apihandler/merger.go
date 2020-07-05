@@ -31,8 +31,8 @@ func (s *Server) MergingOptimus(_ *pb.Request, _ pb.ContentGeneratorService_Merg
 func (s *Server) MergingParty() error {
 
 	//merging altbalaji content
-	//hungamaContent := s.OptimusDB.Collection("test_altbalaji_content")
-	//hungamaMonetize := s.OptimusDB.Collection("test_altbalaji_monetize")
+	hungamaContent := s.OptimusDB.Collection("test_altbalaji_content")
+	hungamaMonetize := s.OptimusDB.Collection("test_altbalaji_monetize")
 
 	//merging schemaroo content
 	//hungamaContent := s.OptimusDB.Collection("test_schemaroo_content")
@@ -47,8 +47,8 @@ func (s *Server) MergingParty() error {
 	//hungamaMonetize := s.OptimusDB.Collection("test_hungama_monetize")
 
 	//merging JUSTWATCH content
-	hungamaContent := s.OptimusDB.Collection("test_justwatch_content")
-	hungamaMonetize := s.OptimusDB.Collection("test_justwatch_monetize")
+	//hungamaContent := s.OptimusDB.Collection("test_justwatch_content")
+	//hungamaMonetize := s.OptimusDB.Collection("test_justwatch_monetize")
 
 	cur, err := hungamaContent.Find(context.Background(), bson.D{{}})
 	if err != nil {
