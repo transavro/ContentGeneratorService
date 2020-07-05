@@ -167,8 +167,8 @@ func (e *Server) makingTileObj(
 	*ref_id = makingRefId()
 	makingOptimus(optimus, media, content, metadata, ref_id)
 	// Add if already present in DB
-	addHungamaNotInDB(e.OptimusDB.Collection("nayan_hungama_content"),
-		e.OptimusDB.Collection("nayan_hungama_monetize"),
+	addHungamaNotInDB(e.OptimusDB.Collection("test_hungama_content"),
+		e.OptimusDB.Collection("test_hungama_monetize"),
 		contentAvlb,
 		optimus,
 		stream,

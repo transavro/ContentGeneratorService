@@ -95,7 +95,7 @@ func (s *Server) FetchAltBalaji(_ *pb.Request, stream pb.ContentGeneratorService
 
 				metadata.Synopsis = fmt.Sprint(data["description"])
 
-				metadata.Categories = []string{fmt.Sprint(data["titleType"])}
+				metadata.Categories = []string{"TV Series"}
 
 				metadata.Languages = []string{}
 				for _, genre := range data["genres"].([]interface{}) {
