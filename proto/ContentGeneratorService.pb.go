@@ -129,9 +129,9 @@ type ContentAvaliable struct {
 	Package              string   `protobuf:"bytes,3,opt,name=package,proto3" json:"package,omitempty"`
 	Type                 string   `protobuf:"bytes,4,opt,name=type,proto3" json:"type,omitempty"`
 	Target               string   `protobuf:"bytes,5,opt,name=target,proto3" json:"target,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-" bson:"-"`
+	XXX_unrecognized     []byte   `json:"-" bson:"-"`
+	XXX_sizecache        int32    `json:"-" bson:"-"`
 }
 
 func (m *ContentAvaliable) Reset()         { *m = ContentAvaliable{} }
@@ -204,9 +204,9 @@ func (m *ContentAvaliable) GetTarget() string {
 type Play struct {
 	ContentAvailable     []*ContentAvaliable `protobuf:"bytes,3,rep,name=content_available,json=contentAvailable,proto3" json:"content_available,omitempty"`
 	RefId                string              `protobuf:"bytes,1,opt,name=ref_id,json=refId,proto3" json:"ref_id,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}            `json:"-"`
-	XXX_unrecognized     []byte              `json:"-"`
-	XXX_sizecache        int32               `json:"-"`
+	XXX_NoUnkeyedLiteral struct{}            `json:"-" bson:"-"`
+	XXX_unrecognized     []byte              `json:"-" bson:"-"`
+	XXX_sizecache        int32               `json:"-" bson:"-"`
 }
 
 func (m *Play) Reset()         { *m = Play{} }
@@ -254,9 +254,9 @@ type Media struct {
 	Backdrop             []string `protobuf:"bytes,2,rep,name=backdrop,proto3" json:"backdrop,omitempty"`
 	Banner               []string `protobuf:"bytes,3,rep,name=banner,proto3" json:"banner,omitempty"`
 	Video                []string `protobuf:"bytes,4,rep,name=video,proto3" json:"video,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-" bson:"-"`
+	XXX_unrecognized     []byte   `json:"-" bson:"-"`
+	XXX_sizecache        int32    `json:"-" bson:"-"`
 }
 
 func (m *Media) Reset()         { *m = Media{} }
@@ -323,9 +323,9 @@ type Content struct {
 	PublishState         bool     `protobuf:"varint,3,opt,name=publish_state,json=publishState,proto3" json:"publish_state,omitempty"`
 	DetailPage           bool     `protobuf:"varint,1,opt,name=detail_page,json=detailPage,proto3" json:"detail_page,omitempty"`
 	Sources              []string `protobuf:"bytes,2,rep,name=sources,proto3" json:"sources,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-" bson:"-"`
+	XXX_unrecognized     []byte   `json:"-" bson:"-"`
+	XXX_sizecache        int32    `json:"-" bson:"-"`
 }
 
 func (m *Content) Reset()         { *m = Content{} }
@@ -395,9 +395,9 @@ type Metadata struct {
 	Episode              int32    `protobuf:"varint,17,opt,name=episode,proto3" json:"episode,omitempty"`
 	Part                 int32    `protobuf:"varint,18,opt,name=part,proto3" json:"part,omitempty"`
 	Mood                 []int32  `protobuf:"varint,19,rep,packed,name=mood,proto3" json:"mood,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-" bson:"-"`
+	XXX_unrecognized     []byte   `json:"-" bson:"-"`
+	XXX_sizecache        int32    `json:"-" bson:"-"`
 }
 
 func (m *Metadata) Reset()         { *m = Metadata{} }
@@ -573,9 +573,9 @@ type Optimus struct {
 	Metadata             *Metadata            `protobuf:"bytes,4,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	CreatedAt            *timestamp.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt            *timestamp.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}             `json:"-"`
-	XXX_unrecognized     []byte               `json:"-"`
-	XXX_sizecache        int32                `json:"-"`
+	XXX_NoUnkeyedLiteral struct{}             `json:"-" bson:"-"`
+	XXX_unrecognized     []byte               `json:"-" bson:"-"`
+	XXX_sizecache        int32                `json:"-" bson:"-"`
 }
 
 func (m *Optimus) Reset()         { *m = Optimus{} }

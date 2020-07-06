@@ -361,7 +361,13 @@ func (s Server) JWLogic(prime map[string]interface{}, jwProvidersMap map[string]
 					}
 				}
 			}
-		} else {
+		}
+
+		if len(media.GetBackdrop()) == 0 {
+			media.Backdrop = []string{}
+		}
+
+		if len(metadata.GetLanguages()) == 0 {
 			media.Backdrop = []string{}
 		}
 
@@ -389,7 +395,8 @@ func (s Server) JWLogic(prime map[string]interface{}, jwProvidersMap map[string]
 			for _, r := range prime["credits"].([]interface{}) {
 				if r.(map[string]interface{})["role"] == "ACTOR" {
 					metadata.Cast = append(metadata.Cast, fmt.Sprint(r.(map[string]interface{})["name"]))
-				} else if r.(map[string]interface{})["role"] == "DIRECTOR" {
+				}
+				if r.(map[string]interface{})["role"] == "DIRECTOR" {
 					metadata.Directors = append(metadata.Directors, fmt.Sprint(r.(map[string]interface{})["name"]))
 				}
 			}
@@ -398,7 +405,8 @@ func (s Server) JWLogic(prime map[string]interface{}, jwProvidersMap map[string]
 		// rechecking the cast nd director
 		if len(metadata.GetCast()) == 0 {
 			metadata.Cast = []string{}
-		} else if len(metadata.GetDirectors()) == 0 {
+		}
+		if len(metadata.GetDirectors()) == 0 {
 			metadata.Directors = []string{}
 		}
 

@@ -31,8 +31,8 @@ func (s *Server) MergingOptimus(_ *pb.Request, _ pb.ContentGeneratorService_Merg
 func (s *Server) MergingParty() error {
 
 	//merging altbalaji content
-	hungamaContent := s.OptimusDB.Collection("test_altbalaji_content")
-	hungamaMonetize := s.OptimusDB.Collection("test_altbalaji_monetize")
+	//hungamaContent := s.OptimusDB.Collection("test_altbalaji_content")
+	//hungamaMonetize := s.OptimusDB.Collection("test_altbalaji_monetize")
 
 	//merging schemaroo content
 	//hungamaContent := s.OptimusDB.Collection("test_schemaroo_content")
@@ -47,8 +47,8 @@ func (s *Server) MergingParty() error {
 	//hungamaMonetize := s.OptimusDB.Collection("test_hungama_monetize")
 
 	//merging JUSTWATCH content
-	//hungamaContent := s.OptimusDB.Collection("test_justwatch_content")
-	//hungamaMonetize := s.OptimusDB.Collection("test_justwatch_monetize")
+	hungamaContent := s.OptimusDB.Collection("test_justwatch_content")
+	hungamaMonetize := s.OptimusDB.Collection("test_justwatch_monetize")
 
 	cur, err := hungamaContent.Find(context.Background(), bson.D{{}})
 	if err != nil {
@@ -96,10 +96,17 @@ func (s *Server) MergingLogic(targetOptimus pb.Optimus, play pb.Play, ctx contex
 	myStages = append(myStages, bson.D{{"$match", bson.D{{"metadata.title", targetOptimus.GetMetadata().GetTitle()}}}})
 
 	// then checking on the base of language
-	myStages = append(myStages, bson.D{{"$match", bson.D{{"metadata.languages", bson.D{{"$in", targetOptimus.GetMetadata().GetLanguages()}}}}}})
+	//myStages = append(myStages, bson.D{{"$match", bson.D{{"metadata.languages", bson.D{{"$in", targetOptimus.GetMetadata().GetLanguages()}}}}}})
 
 	//// then checking on the base of categories
-	myStages = append(myStages, bson.D{{"$match", bson.D{{"metadata.categories", bson.D{{"$in", targetOptimus.GetMetadata().GetCategories()}}}}}})
+	//myStages = append(myStages, bson.D{{"$match", bson.D{{"metadata.categories", bson.D{{"$in", targetOptimus.GetMetadata().GetCategories()}}}}}})
+
+
+	tmp := bson.D{{"$match", bson.M{"$or": bson.A{ bson.M{"metadata.categories" : bson.M{"$in" : targetOptimus.GetMetadata().GetCategories()}},
+		bson.M{"metadata.languages" : bson.M{"$in" : targetOptimus.GetMetadata().GetLanguages() }}}}}}
+
+	myStages = append(myStages, tmp)
+
 
 	result, err := baseContent.Aggregate(ctx, myStages)
 
