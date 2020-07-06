@@ -203,8 +203,8 @@ func (s *Server) FetchShemaroo(_ *pb.Request, stream pb.ContentGeneratorService_
 					metadata.Categories = []string{"Kids-Shows"}
 				} else if item.CatalogObject.FriendlyID == "bhakti" || item.CatalogObject.PlanCategoryType == "bhakti" {
 					metadata.Categories = []string{"Devotional Videos"}
-				} else {
-					metadata.Categories = []string{item.CatalogObject.FriendlyID}
+				} else if item.CatalogObject.FriendlyID == "ibadaat-show" || item.CatalogObject.PlanCategoryType == "ibadaat-show" {
+					metadata.Categories = []string{"Devotional Videos"}
 				}
 
 				if item.Language != "" {
@@ -339,6 +339,8 @@ func (s *Server) FetchShemaroo(_ *pb.Request, stream pb.ContentGeneratorService_
 				}
 				contentAvlb.TargetId = item.ContentID
 				contentAvlb.Source = "Shemaroo"
+
+				//Devotional Videos
 
 				// check if already presnet
 				log.Println("Checking if already present ===>   ", optimus.GetMetadata().GetTitle())

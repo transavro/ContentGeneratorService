@@ -247,7 +247,7 @@ func (s *Server) FetchNativeData(_ *pb.Request, stream pb.ContentGeneratorServic
 								//TODO chaning categories to make the whole categories of third party at one ground.
 								categories := strings.TrimSpace(fmt.Sprint(value))
 								if categories == "Series" || categories == "Series with Seasons" {
-									metadata.Categories = append(metadata.Categories, "TV series")
+										metadata.Categories = append(metadata.Categories, "TV Series")
 								} else if categories == "Kids Rhymes" {
 									metadata.Categories = append(metadata.Categories, "Kids-Rhymes")
 								} else if categories == "Kid Movies" {
