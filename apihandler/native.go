@@ -3,14 +3,15 @@ package apihandler
 import (
 	"context"
 	"fmt"
+	"log"
+	"strings"
+	"time"
+
 	"github.com/golang/protobuf/ptypes"
 	pb "github.com/transavro/ContentGeneratorService/proto"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"log"
-	"strings"
-	"time"
 )
 
 func (s *Server) FetchNativeData(_ *pb.Request, stream pb.ContentGeneratorService_FetchNativeDataServer) error {
@@ -33,6 +34,10 @@ func (s *Server) FetchNativeData(_ *pb.Request, stream pb.ContentGeneratorServic
 		err = cur.Decode(&prime)
 		if err != nil {
 			return err
+		}
+
+		if prime.Map()["content"].(primitive.D).Map()["publishState"] != nil && prime.Map()["content"].(primitive.D).Map()["publishState"].(bool) == false {
+			continue
 		}
 
 		for k1, v1 := range prime.Map() {
@@ -247,7 +252,7 @@ func (s *Server) FetchNativeData(_ *pb.Request, stream pb.ContentGeneratorServic
 								//TODO chaning categories to make the whole categories of third party at one ground.
 								categories := strings.TrimSpace(fmt.Sprint(value))
 								if categories == "Series" || categories == "Series with Seasons" {
-										metadata.Categories = append(metadata.Categories, "TV Series")
+									metadata.Categories = append(metadata.Categories, "TV Series")
 								} else if categories == "Kids Rhymes" {
 									metadata.Categories = append(metadata.Categories, "Kids-Rhymes")
 								} else if categories == "Kid Movies" {

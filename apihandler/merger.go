@@ -83,29 +83,30 @@ func (s *Server) MergingParty() error {
 
 var contentFoundCount = 0
 
-func (s *Server) MergingLogic(targetOptimus pb.Optimus, play pb.Play, ctx context.Context) error {
+func (s *Server) MergingLogic(targetOptimus pb.Optimus, targetPLay pb.Play, ctx context.Context) error {
 
-	contentAvlb := play.ContentAvailable[0]
+
 	baseContent := s.OptimusDB.Collection("optimus_content")
 	baseMonetize := s.OptimusDB.Collection("optimus_monetize")
 
 	// merging query
 	myStages := mongo.Pipeline{}
 
+
 	// first check on the bases of title
 	myStages = append(myStages, bson.D{{"$match", bson.D{{"metadata.title", targetOptimus.GetMetadata().GetTitle()}}}})
-
-	// then checking on the base of language
-	//myStages = append(myStages, bson.D{{"$match", bson.D{{"metadata.languages", bson.D{{"$in", targetOptimus.GetMetadata().GetLanguages()}}}}}})
-
-	//// then checking on the base of categories
-	//myStages = append(myStages, bson.D{{"$match", bson.D{{"metadata.categories", bson.D{{"$in", targetOptimus.GetMetadata().GetCategories()}}}}}})
-
-
-	tmp := bson.D{{"$match", bson.M{"$or": bson.A{ bson.M{"metadata.categories" : bson.M{"$in" : targetOptimus.GetMetadata().GetCategories()}},
-		bson.M{"metadata.languages" : bson.M{"$in" : targetOptimus.GetMetadata().GetLanguages() }}}}}}
-
-	myStages = append(myStages, tmp)
+	if len(targetOptimus.GetMetadata().GetDirectors()) > 0 {
+		// then checking on the base of directors
+		myStages = append(myStages, bson.D{{"$match", bson.D{{"metadata.directors", bson.D{{"$in", targetOptimus.GetMetadata().GetDirectors()}}}}}})
+	}
+	if len(targetOptimus.GetMetadata().GetLanguages()) > 0 {
+		// then checking on the base of language
+		myStages = append(myStages, bson.D{{"$match", bson.D{{"metadata.languages", bson.D{{"$in", targetOptimus.GetMetadata().GetLanguages()}}}}}})
+	}
+	if len(targetOptimus.GetMetadata().GetCategories()) > 0 {
+		// then checking on the base of categories
+		myStages = append(myStages, bson.D{{"$match", bson.D{{"metadata.categories", bson.D{{"$in", targetOptimus.GetMetadata().GetCategories()}}}}}})
+	}
 
 
 	result, err := baseContent.Aggregate(ctx, myStages)
@@ -118,10 +119,7 @@ func (s *Server) MergingLogic(targetOptimus pb.Optimus, play pb.Play, ctx contex
 			if err != nil {
 				return err
 			}
-			_, err = baseMonetize.InsertOne(ctx, pb.Play{
-				ContentAvailable: []*pb.ContentAvaliable{contentAvlb},
-				RefId:            targetOptimus.RefId,
-			})
+			_, err = baseMonetize.InsertOne(ctx, targetPLay)
 			if err != nil {
 				return err
 			}
@@ -423,9 +421,8 @@ func (s *Server) MergingLogic(targetOptimus pb.Optimus, play pb.Play, ctx contex
 			// making monetize
 
 			// case 1 if the content is not present
-			montizeFilter := bson.D{{"refid", baseOptimus.GetRefId()}}
 
-			findOneResult := baseMonetize.FindOne(ctx, montizeFilter)
+			findOneResult := baseMonetize.FindOne(ctx, bson.D{{"refid", baseOptimus.GetRefId()}})
 			if findOneResult.Err() != nil {
 
 
@@ -435,20 +432,28 @@ func (s *Server) MergingLogic(targetOptimus pb.Optimus, play pb.Play, ctx contex
 					return findOneResult.Err()
 				}
 			} else {
+
 				var play pb.Play
 				err = findOneResult.Decode(&play)
 				if err != nil {
 					return err
 				}
-				for _, v := range play.ContentAvailable {
-					if v.Source != contentAvlb.Source {
-						play.ContentAvailable = append(play.ContentAvailable, contentAvlb)
-						_, err = baseMonetize.ReplaceOne(ctx, montizeFilter, play)
-						if err != nil {
-							return err
+
+				for _, avaliable := range targetPLay.ContentAvailable {
+					isFound := false
+					for _, contentAvaliable := range play.ContentAvailable {
+						if contentAvaliable.Source == avaliable.Source {
+							isFound = true
+							break
 						}
-						break
 					}
+					if isFound == false {
+						play.ContentAvailable = append(play.ContentAvailable, avaliable)
+					}
+				}
+				_, err = baseMonetize.ReplaceOne(ctx, bson.D{{"refid", baseOptimus.GetRefId()}}, play)
+				if err != nil {
+					return err
 				}
 			}
 		}
@@ -458,10 +463,7 @@ func (s *Server) MergingLogic(targetOptimus pb.Optimus, play pb.Play, ctx contex
 			if err != nil {
 				return err
 			}
-			_, err = baseMonetize.InsertOne(ctx, pb.Play{
-				ContentAvailable: []*pb.ContentAvaliable{contentAvlb},
-				RefId:            targetOptimus.RefId,
-			})
+			_, err = baseMonetize.InsertOne(ctx, targetPLay)
 			if err != nil {
 				return err
 			}
